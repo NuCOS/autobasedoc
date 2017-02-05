@@ -36,19 +36,24 @@ if __name__ == "__main__":
     #x = mu + sigma*np.random.randn(10000)
     x = np.random.uniform(1, 6, size=150)
 
-
     Content.update({"my first data":x})
     Context.update({"my first data":"What I always wanted to say about data that has some data title"})
 
     # Begin of Documentation to Potable Document
     outname = os.path.realpath(os.path.join(__examples__,"MinimalExample.pdf"))
-    doc = ar.AutoDocTemplate(outname,onFirstPage=ar.drawFirstPage,onLaterPages=ar.drawLaterPage,onLaterSPages=ar.drawLaterLPage)
+    doc = ar.AutoDocTemplate(outname,
+                             onFirstPage=ar.drawFirstPage,
+                             onLaterPages=ar.drawLaterPage,
+                             onLaterSPages=ar.drawLaterLPage)
 
     contents = []
     #doc.multiBuild(story)
 
     # If you want to append special behaviour of some Paragraph styles:
-    ar.styles.normal_left = ar.ParagraphStyle(name='normal', fontSize=6, leading = 7, alignment=ar.TA_LEFT)
+    ar.styles.normal_left = ar.ParagraphStyle(name='normal', 
+                                              fontSize=6, 
+                                              leading = 7, 
+                                              alignment=ar.TA_LEFT)
 
     # add title
     para = ar.Paragraph(u"Minimal Example Title", ar.styles.title)
