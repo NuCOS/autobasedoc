@@ -14,13 +14,13 @@ folder = "../"
 
 importpath=os.path.realpath(os.path.join(__root__,folder))
 
-print(importpath)
+#print(importpath)
 sys.path.append(importpath)
 
 from autoreport import autoreport as ar 
 from autoreport import autoplot as ap
 
-name_loc = "../data"
+name_loc = "."#"../data"
 __examples__ = os.path.realpath(os.path.join(__root__,name_loc))
 
 if __name__ == "__main__":
@@ -100,5 +100,4 @@ if __name__ == "__main__":
 
     #write the buffer to the document
     #doc.build(contents)
-
     doc.multiBuild(contents)

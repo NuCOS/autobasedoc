@@ -209,8 +209,8 @@ def addPlugin(canv,doc,frame="First"):
         """
         left,right = doc.leftM,doc.rightM
         
-        print("drawLine at posy:",posy)
-        print("from %s to %s"%(left,right))
+        #print("drawLine at posy:",posy)
+        #print("from %s to %s"%(left,right))
 
         if getattr(pitem,"rightMargin",None):
             right-=pitem.rightMargin
@@ -767,7 +767,7 @@ class AutoDocTemplate(BaseDocTemplate):
                 #thisTemplate = temp
                 #print( temp.id )
                 for frame in temp.frames:
-                    print( frame.id )
+                    #print( frame.id )
                     if f(frame) == orientation:
                         
                         return frame,temp.pagesize
