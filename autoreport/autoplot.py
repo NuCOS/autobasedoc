@@ -35,7 +35,7 @@ if is_python3:
 else:
     matplotlib.use('Agg')
 
-# Farbnamen, die in Matplotlib fehlen, ergänzen
+# add color names, missing in matplotlib
 matplotlib.colors.cnames.update({'darkyellow': '#CC9900', 'lightmagenta':'#EDB2ED', 'lightred':'#FF8787'})
 
 #print( plt.get_backend() )
@@ -90,16 +90,20 @@ textsize = 12
 #plt.rc('axes', color_cycle=plotcolors)
 matplotlib.rc('axes', prop_cycle=(cycler('color', plotcolors)))
 
-plt.rc('xtick', labelsize=textsize,color=almost_black)
-plt.rc('ytick', labelsize=textsize, color=almost_black)
+plt.rc('xtick', 
+       labelsize=textsize,
+       color=almost_black)
+plt.rc('ytick', 
+       labelsize=textsize, 
+       color=almost_black)
 
 from pdfimage import PdfImage,PdfAsset,getScaledSvg
 
 __font_dir__ = os.path.dirname(__file__)
 __font_dir__ = os.path.realpath(os.path.join(__font_dir__,"fonts"))
 
-font = fm.FontProperties(
-        family = 'sans-serif', fname = os.path.join(__font_dir__,'calibri.ttf'))
+font = fm.FontProperties(family = 'sans-serif', 
+                         fname = os.path.join(__font_dir__,'calibri.ttf'))
 
 matplotlib.rcParams['font.family'] = 'sans-serif'
 matplotlib.rcParams['font.sans-serif'] = 'calibri'
@@ -110,18 +114,20 @@ matplotlib.rcParams['font.style'] = 'normal'
 
 properties={}
 
-properties.update({"labelAxesFontSize":12,
-                   "tickAxesFontSize":12,
-                   "legendLabelFontSize":12,
-                   "textBoxFontSize":12,
-                   "titleFontSize":12,
-                   "textTableFontSize":12})
-
-textsize=12
+properties.update({"labelAxesFontSize":textsize,
+                   "tickAxesFontSize":textsize,
+                   "legendLabelFontSize":textsize,
+                   "textBoxFontSize":textsize,
+                   "titleFontSize":textsize,
+                   "textTableFontSize":textsize})
 
 def autoPdfImage(func):
     """
     decorator for the autoplot module
+    
+    Draft! this is not working
+    
+    TODO: imgleg is not returned correctly
     """
     def funcwrapper(*args,**kwargs):
         imgax = BytesIO()

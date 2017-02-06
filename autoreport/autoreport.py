@@ -2,8 +2,8 @@
 """
 Created on Mon Jun 17 16:45:06 2013
 
--Automatische Bericht-Erstellung (mit reportlab)
--Intern vollständig auf Vektorgrafik basierend -> kleine, immer anzeige- und druck- optimale Dokumente!
+-automatic report generation (using reportlab)
+-allows to do everything based on vectorgraphics
 
 """
 from __future__ import print_function
