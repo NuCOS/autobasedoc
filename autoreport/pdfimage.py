@@ -9,6 +9,8 @@ SVG images can currently only be returned as a Drawing:
 
 from reportlab.graphics.shapes import Drawing
 
+reportlab.lib.utils.ImageReader
+
 """
 
 from reportlab.platypus import Image, Flowable
