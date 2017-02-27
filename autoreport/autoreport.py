@@ -170,6 +170,66 @@ def reprFrame(frame):
     for key in sorted(list(frame.__dict__.keys())):
         print(key,": ",frame.__dict__[key])
 
+def getTableStyle(tSty=None,
+                  tSpaceAfter=0,
+                  tSpaceBefore=0):
+    """
+    returns TableStyle object
+    
+    use the add method of that object to add style commands e.g.:
+    
+    to add a background in the first row:
+    tableStyle.add(("BACKGROUND",(0,0),(2,0),ar.colors.green))
+    tableStyle.add(("BACKGROUND",(2,0),(4,0),ar.colors.lavender))
+    
+    to change text color on the first two columns:
+    tableStyle.add(("TEXTCOLOR",(0,0),(1,-1),ar.colors.red))
+    
+    to change alignment of all cells to 'right':
+    tableStyle.add(("ALIGN",(0,0),(-1,-1),"RIGHT"))
+    
+    to add a grid for the whole table:
+    tableStyle.add(("GRID",(0,0),(-1,-1),0.5,ar.colors.black))
+    
+    some further examples of command entries:
+    ("ALIGN",(0,0),(1,-1),"LEFT"),
+    ("ALIGN",(1,0),(2,-1),"RIGHT"),
+    ("ALIGN",(-2,0),(-1,-1),"RIGHT"),
+    ("GRID",(1,1),(-2,-2),1,ar.colors.green),
+    ("BOX",(0,0),(1,-1),2,ar.colors.red),
+    ("LINEABOVE",(1,2),(-2,2),1,ar.colors.blue),
+    ("LINEBEFORE",(2,1),(2,-2),1,ar.colors.pink),
+    ("BACKGROUND", (0, 0), (0, 1), ar.colors.pink),
+    ("BACKGROUND", (1, 1), (1, 2), ar.colors.lavender),
+    ("BACKGROUND", (2, 2), (2, 3), ar.colors.orange),
+    ("BOX",(0,0),(-1,-1),2,ar.colors.black),
+    ("GRID",(0,0),(-1,-1),0.5,ar.colors.black),
+    ("VALIGN",(3,0),(3,0),"BOTTOM"),
+    ("BACKGROUND",(3,0),(3,0),ar.colors.limegreen),
+    ("BACKGROUND",(3,1),(3,1),ar.colors.khaki),
+    ("ALIGN",(3,1),(3,1),"CENTER"),
+    ("BACKGROUND",(3,2),(3,2),ar.colors.beige),
+    ("ALIGN",(3,2),(3,2),"LEFT"),
+    ("GRID", (0,0), (-1,-1), 0.25, ar.colors.black),
+    ("ALIGN", (1,1), (-1,-1), "RIGHT")
+    ("FONTSIZE", (1,0), (1,0), self.fontsizes["table"])
+    
+    ('SPAN',(1,0),(1,-1))
+    """
+    
+    if not tSty:
+        tSty = list()
+        
+    else:
+        pass
+    
+    tableStyle = TableStyle(tSty)
+    
+    tableStyle.spaceAfter = tSpaceAfter
+    tableStyle.spaceBefore = tSpaceBefore
+    
+    return tableStyle
+
 def addPlugin(canv,doc,frame="First"):
     """
     holds all functions to handle placing all elements on the canvas...
