@@ -22,11 +22,9 @@ import numpy as np
 #from scipy.stats import variation
 #from scipy.stats import skew
 
-if __name__ == "__main__":
-    pass
-    #import shutil
-    
-    #shutil.rmtree(r"C:\Users\ecksjoh\.matplotlib")
+#import shutil
+
+#shutil.rmtree(os.path.join(os.path.expanduser("~"),".matplotlib"))
 
 import matplotlib
 is_python3 = ( sys.version_info.major==3 )
@@ -59,6 +57,11 @@ from matplotlib.transforms import Bbox
 from matplotlib.ticker import LinearLocator,MultipleLocator,AutoMinorLocator,FormatStrFormatter
 ##from matplotlib.ticker import 
 import matplotlib.font_manager as fm
+
+from matplotlib.font_manager import findfont
+from matplotlib import ft2font
+
+from matplotlib.font_manager import createFontList, ttfFontProperty
 
 plt.ioff()
 
@@ -105,9 +108,15 @@ __font_dir__ = os.path.realpath(os.path.join(__font_dir__,"fonts"))
 font = fm.FontProperties(family = 'sans-serif', 
                          fname = os.path.join(__font_dir__,'calibri.ttf'))
 
-matplotlib.rcParams['font.family'] = 'sans-serif'
-matplotlib.rcParams['font.sans-serif'] = 'calibri'
-matplotlib.rcParams['font.style'] = 'normal'
+font = ft2font.FT2Font(fpath)
+
+fontprop = ttfFontProperty(font)
+
+#print(fontprop.get_name())
+
+#matplotlib.rcParams['font.family'] = 'sans-serif'
+#matplotlib.rcParams['font.sans-serif'] = font.get_name()
+#matplotlib.rcParams['font.style'] = 'normal'
 
 #plotcolors=['darkslategray','salmon','royalblue','lawngreen', 'gold','cyan','violet']
 #plotcolors+=plotcolors
@@ -125,10 +134,18 @@ def autoPdfImage(func):
     """
     decorator for the autoplot module
     
-    Draft! this is not working
+    minimal example::
+        
+        def my_decorator(f):
+            @wraps(f)
+            def wrapper(*args, **kwds):
+                print('Calling decorated function')
+                return f(*args, **kwds)
+            return wrapper
     
     TODO: imgleg is not returned correctly
     """
+    @wraps(func)
     def funcwrapper(*args,**kwargs):
         imgax = BytesIO()
         imgleg = BytesIO()
