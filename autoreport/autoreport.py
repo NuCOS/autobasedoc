@@ -93,6 +93,11 @@ for k, v in colors.__dict__.items():
 color_dict.update({'gray40':Color(0.4,0.4,0.4,1),
                    'lightred':Color(.980392,.501961,.447059,1)})
 
+_baseFontName  =None
+_baseFontNameB =None
+_baseFontNameI =None
+_baseFontNameBI=None
+    
 def registerFont(faceName,afm,pfb):
     """
     Helvetica BUT AS AFM
@@ -126,7 +131,7 @@ def setFonts(typ='simple1type'):
         _baseFontNameI ='Helvetica-Oblique'
         _baseFontNameBI='Helvetica-BoldOblique'
 
-    if typ=='sans-serif':
+    elif typ=='sans-serif':
 
         baseNameDict={'Helvetica':"_a______",
                       'Helvetica-Bold':"_ab_____",
@@ -142,7 +147,7 @@ def setFonts(typ='simple1type'):
         _baseFontNameI =pdfmetrics.getFont('Helvetica-Oblique').fontName
         _baseFontNameBI=pdfmetrics.getFont('Helvetica-BoldOblique').fontName
 
-    if typ=='serif':
+    elif typ=='serif':
 
         pdfmetrics.registerFont(TTFont('Calibri',
                                        os.path.join(__font_dir__,'CALIBRI.TTF')))
@@ -162,13 +167,17 @@ def setFonts(typ='simple1type'):
         _baseFontNameB = pdfmetrics.getFont('CalibriBd').fontName
         _baseFontNameI = pdfmetrics.getFont('CalibriIt').fontName
         _baseFontNameBI= pdfmetrics.getFont('CalibriBI').fontName
+        
+    else:
+        
+        _baseFontName  ='Helvetica'
+        _baseFontNameB ='Helvetica-Bold'
+        _baseFontNameI ='Helvetica-Oblique'
+        _baseFontNameBI='Helvetica-BoldOblique'
 
     return _baseFontName,_baseFontNameB,_baseFontNameI,_baseFontNameBI
 
-_baseFontName  ='Helvetica'
-_baseFontNameB ='Helvetica-Bold'
-_baseFontNameI ='Helvetica-Oblique'
-_baseFontNameBI='Helvetica-BoldOblique'
+#_baseFontName,_baseFontNameB,_baseFontNameI,_baseFontNameBI = setFonts('sans-serif')
 
 def reprFrame(frame):
     
@@ -996,7 +1005,7 @@ class AutoDocTemplate(BaseDocTemplate):
 
         try to handle one flowable from the front of list flowables.
 
-        added a dirty workaround to scale images if their boundingBox exceeds the bordersof the frame.
+        added a dirty workaround to scale images if their boundingBox exceeds the borders of the frame.
         """
 
         #allow document a chance to look at, modify or ignore
@@ -1481,8 +1490,8 @@ class Styles(object):
         except AttributeError:
             pass
 
-styles = Styles()
-styles.registerStyles()
+#styles = Styles()
+#styles.registerStyles()
 
 def doTabelOfContents():
     """
@@ -1575,7 +1584,7 @@ def doHeading(title,sty,outlineText=None, bookmarkFullpage=False):
 
     return (bm,h)
 
-def doImage(Img,doc,titlename):
+def doImage(Img,doc,titlename,sty):
     """
     Here we simplify the process of inserting an Image to the pdf story
 
@@ -1588,28 +1597,29 @@ def doImage(Img,doc,titlename):
         factor = doc.width/Img.drawWidth
         Img.drawHeight = Img.drawHeight * factor
         Img.drawWidth  = Img.drawWidth  * factor
-        para = Paragraph(u"Fig. " +  doc.figcounter() + u" " + titlename + u" Vertikal", styles.caption)
+        para = Paragraph(u"Fig. " +  doc.figcounter() + u" " + titlename + u" Vertikal", sty.caption)
 
         return (Img,para)
     else:
         return ""
 
-
-def PageNextLandscape(contents):
+def PageNext(contents,nextTemplate="LaterL"):
     """
     switch to Landscape on next page
     """
     if isinstance(contents[-1],PageBreak):
-        contents.insert(-1,NextPageTemplate('LaterL'))
+        contents.insert(-1,NextPageTemplate(nextTemplate))
     else:
-        contents.append(NextPageTemplate('LaterL'))
+        contents.append(NextPageTemplate(nextTemplate))
         contents.append(PageBreak())
     return contents
 
 ###############################################################################
 
 if __name__ == "__main__":
+    
+    print("this is a module")
     #print Paragraph styles added to the styles.stylesheet
-    print(styles.stylesheet.list() )
+    #print(styles.stylesheet.list() )
     
     #print(color_dict)

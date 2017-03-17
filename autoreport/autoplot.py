@@ -15,7 +15,7 @@ import sys
 #from itertools import cycle
 #from operator import itemgetter, attrgetter
 
-import numpy as np
+#import numpy as np
 
 #from scipy.stats import gaussian_kde
 #from scipy.stats import kurtosis
@@ -73,44 +73,47 @@ plt.ioff()
 
 from cycler import cycler
 
-plotcolors=['#4169E1',  #royalblue
-            '#FF6347',  #tomato
-            '#FFD700',  #gold
-            '#48D1CC',  #mediumturquosie
-            '#BA55D3',  #mediumorchid
-            '#9ACD32',  #yellowgreen
-            '#DEB887',  #burlywood
-            '#2F4F4F',  #darkslategray
-            '#FFA500',  #orange
-            '#C0C0C0',  #silver
-            ]
+#plotcolors=['#4169E1',  #royalblue
+#            '#FF6347',  #tomato
+#            '#FFD700',  #gold
+#            '#48D1CC',  #mediumturquosie
+#            '#BA55D3',  #mediumorchid
+#            '#9ACD32',  #yellowgreen
+#            '#DEB887',  #burlywood
+#            '#2F4F4F',  #darkslategray
+#            '#FFA500',  #orange
+#            '#C0C0C0',  #silver
+#            ]
 
 #almost_black='#262626'
-almost_black='#000000'
-
-textsize = 12
+#almost_black='#000000'
 
 #plt.rc('axes', color_cycle=plotcolors)
-matplotlib.rc('axes', prop_cycle=(cycler('color', plotcolors)))
+#matplotlib.rc('axes', prop_cycle=(cycler('color', plotcolors)))
 
-plt.rc('xtick', 
-       labelsize=textsize,
-       color=almost_black)
-plt.rc('ytick', 
-       labelsize=textsize, 
-       color=almost_black)
+textsize = 12
+#plt.rc('xtick', 
+#       labelsize=textsize,
+#       color=almost_black)
+#plt.rc('ytick', 
+#       labelsize=textsize, 
+#       color=almost_black)
 
 from pdfimage import PdfImage,PdfAsset,getScaledSvg
+
+from functools import wraps
 
 __font_dir__ = os.path.dirname(__file__)
 __font_dir__ = os.path.realpath(os.path.join(__font_dir__,"fonts"))
 
-font = fm.FontProperties(family = 'sans-serif', 
-                         fname = os.path.join(__font_dir__,'calibri.ttf'))
+#font = fm.FontProperties(family = 'sans-serif', 
+#                         fname = os.path.join(__font_dir__,'calibri.ttf'))
 
-font = ft2font.FT2Font(fpath)
+#fpath = os.path.join(__font_dir__,'c063002t.ttf')
+#font = ft2font.FT2Font(fpath)
+#fontprop = ttfFontProperty(font)
 
-fontprop = ttfFontProperty(font)
+fontprop=None
 
 #print(fontprop.get_name())
 

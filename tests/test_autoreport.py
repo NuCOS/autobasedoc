@@ -18,7 +18,23 @@ importpath=os.path.realpath(os.path.join(__root__,folder))
 sys.path.append(importpath)
 
 from autoreport import autoreport as ar 
-from autoreport import autoplot as ap
+
+ap=ar.ap
+
+ar._baseFontName,ar._baseFontNameB,ar._baseFontNameI,ar._baseFontNameBI = ar.setFonts(typ='sans-serif')
+
+fpath = os.path.join(ap.__font_dir__,'calibri.ttf')
+font = ap.ft2font.FT2Font(fpath)
+ap.fontprop = ap.ttfFontProperty(font)
+
+fontprop = ap.fm.FontProperties(family='sans-serif',
+                                #name=ap.fontprop.name,
+                                fname=ap.fontprop.fname,
+                                size=None,
+                                stretch=ap.fontprop.stretch,
+                                style=ap.fontprop.style,
+                                variant=ap.fontprop.variant,
+                                weight=ap.fontprop.weight)
 
 name_loc = "."#"../data"
 __examples__ = os.path.realpath(os.path.join(__root__,name_loc))
@@ -48,34 +64,36 @@ if __name__ == "__main__":
 
     contents = []
     #doc.multiBuild(story)
+    styles=ar.Styles()
+    styles.registerStyles()
 
     # If you want to append special behaviour of some Paragraph styles:
-    ar.styles.normal_left = ar.ParagraphStyle(name='normal', 
+    styles.normal_left = ar.ParagraphStyle(name='normal', 
                                               fontSize=6, 
                                               leading = 7, 
                                               alignment=ar.TA_LEFT)
 
     # add title
-    para = ar.Paragraph(u"Minimal Example Title", ar.styles.title)
+    para = ar.Paragraph(u"Minimal Example Title", styles.title)
     contents.append(para)
     contents.append(ar.PageBreak())
 
     # Create an instance of TableOfContents. Override the level styles (optional)
     # and add the object to the story
     toc = ar.doTabelOfContents()
-    contents.append(ar.Paragraph(u"Inhaltsverzeichnis", ar.styles.h1))
+    contents.append(ar.Paragraph(u"Inhaltsverzeichnis", styles.h1))
     contents.append(toc)
     contents.append(ar.PageBreak())
 
     # Begin of First Chapter
-    part = ar.doHeading("Text", ar.styles.h1)
+    part = ar.doHeading("Text", styles.h1)
     for p in part:
         contents.append(p)
 
-    para = ar.Paragraph(u"My Text that I can write here or take it from somewhere like shown in the next paragraph.", ar.styles.normal)
+    para = ar.Paragraph(u"My Text that I can write here or take it from somewhere like shown in the next paragraph.", styles.normal)
     contents.append(para)
 
-    part = ar.doHeading(Subchapters[1], ar.styles.h2)
+    part = ar.doHeading(Subchapters[1], styles.h2)
     for p in part:
         contents.append(p)
 
@@ -84,20 +102,23 @@ if __name__ == "__main__":
     #para = ar.doTableAsParagraph('text',ar.styles.p3,doc.width,outlineText="outline to text")
     #contents.append(para)
 
-    para = ar.Paragraph(Context[title], ar.styles.normal)
+    para = ar.Paragraph(Context[title], styles.normal)
     contents.append(para)
 
 
-    para = ar.Paragraph(u"Fig. " + str(doc.figcounter()) + title,ar.styles.caption)
+    para = ar.Paragraph(u"Fig. " + str(doc.figcounter()) + title,styles.caption)
     contents.append(para)
 
-    contents.append(ar.Paragraph("Table is here.",ar.styles.normal))
-    contents.append(ar.NextPageTemplate('LaterL'))
-    contents.append(ar.PageBreak())
-    contents.append(ar.Paragraph("Pictures are to be placed here.",ar.styles.normal))
+    contents.append(ar.Paragraph("Table is here.",styles.normal))
+#    contents.append(ar.NextPageTemplate('LaterL'))
+#    contents.append(ar.PageBreak())
+
+    ar.PageNext(contents,nextTemplate='LaterL')
+    contents.append(ar.Paragraph("Pictures are to be placed here.",styles.normal))
 
     contents.append(ar.PageBreak())
 
     #write the buffer to the document
     #doc.build(contents)
+
     doc.multiBuild(contents)
