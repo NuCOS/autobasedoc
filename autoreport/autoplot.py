@@ -124,32 +124,63 @@ fontprop=None
 #plotcolors=['darkslategray','salmon','royalblue','lawngreen', 'gold','cyan','violet']
 #plotcolors+=plotcolors
 
-properties={}
-
-properties.update({"labelAxesFontSize":textsize,
-                   "tickAxesFontSize":textsize,
-                   "legendLabelFontSize":textsize,
-                   "textBoxFontSize":textsize,
-                   "titleFontSize":textsize,
-                   "textTableFontSize":textsize})
+#properties={}
+#
+#properties.update({"labelAxesFontSize":textsize,
+#                   "tickAxesFontSize":textsize,
+#                   "legendLabelFontSize":textsize,
+#                   "textBoxFontSize":textsize,
+#                   "titleFontSize":textsize,
+#                   "textTableFontSize":textsize})
 
 def autoPdfImage(func):
     """
     decorator for the autoplot module
     
-    minimal example::
+    returns two PdfImage objects if wrapped plt-function obeys the principle 
+    demonstated in following minimal example::
         
-        def my_decorator(f):
-            @wraps(f)
-            def wrapper(*args, **kwds):
-                print('Calling decorated function')
-                return f(*args, **kwds)
-            return wrapper
+        @autoPdfImage
+        def my_plot(canvaswidth=5): #[inch]
+            fig, ax = ap.plt.subplots(figsize=(canvaswidth,canvaswidth))
+            fig.suptitle("My Plot",fontproperties=fontprop)
+            x=[1,2,3,4,5,6,7,8]
+            y=[1,6,8,3,9,3,4,2]
+            ax.plot(x,y,label="legendlabel")
+            
+            nrow,ncol=1,1
+            handels,labels= axl.get_legend_handles_labels()
+            
+            leg_fig = ap.plt.figure(figsize=(canvaswidth, 0.2*nrow))
+            
+            leg = leg_fig.legend(handles, labels, #labels = tuple(bar_names)
+                   ncol=ncol, mode=None, 
+                   borderaxespad=0.,
+                   loc='center',        # the location of the legend handles
+                   handleheight=None,   # the height of the legend handles
+                   #fontsize=9,         # prop beats fontsize
+                   markerscale=None,
+                   frameon=False,
+                   prop=fontprop
+                   #fancybox=True,
+                   )
+            
+            return fig,leg_fig,leg
     
-    TODO: imgleg is not returned correctly
+    TODO: add example in tests
     """
     @wraps(func)
     def funcwrapper(*args,**kwargs):
+        """
+        minimal example::
+            
+            def my_decorator(f):
+                @wraps(f)
+                def wrapper(*args, **kwds):
+                    print('Calling decorated function')
+                    return f(*args, **kwds)
+                return wrapper
+        """
         imgax = BytesIO()
         imgleg = BytesIO()
         
