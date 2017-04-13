@@ -86,7 +86,7 @@ import autoplot as ap
 #  only adding items of type key:str AND value:Color to the color_dict
 color_dict={}
 
-for k, v in colors.__dict__.items():
+for k, v in vars(colors).items():
     if isinstance(k,str) and isinstance(v,Color):
         color_dict.update({k:v})
     
@@ -180,9 +180,9 @@ def setFonts(typ='simple1type'):
 #_baseFontName,_baseFontNameB,_baseFontNameI,_baseFontNameBI = setFonts('sans-serif')
 
 def reprFrame(frame):
-    
-    for key in sorted(list(frame.__dict__.keys())):
-        print(key,": ",frame.__dict__[key])
+    _dict=vars(frame)
+    for key in sorted(list(_dict.keys())):
+        print(key,": ",_dict[key])
 
 def getTableStyle(tSty=None,
                   tSpaceAfter=0,
@@ -571,7 +571,33 @@ def drawLaterLPage(canv,doc):
 
     canv.restoreState()
 
-def drawLaterLSPage(canv,doc):
+def drawLaterLandscapeMultiPage(canv,doc):
+    """
+    This is the Template of any later drawn Landscape Oriented Page
+    """
+    canv.saveState()
+
+    #set Page Size and
+    #some variables
+
+    frame,pagesize = doc.getFrame('LaterL',orientation="Landscape")
+    
+    #print(pagesize[0],pagesize[1])
+
+    canv.setPageSize( pagesize )
+    canv.setFont(_baseFontName,doc.fontSize)
+
+    doc.centerM = (frame._width-(frame._leftPadding+frame._rightPadding))/2
+    doc.leftM = frame._leftPadding
+    doc.rightM = frame._width-frame._rightPadding
+    doc.headM = (frame._height-frame._topPadding)+doc.topM
+    doc.bottomM = frame._bottomPadding-doc.topM
+
+    addPlugin(canv,doc,frame="Later")
+
+    canv.restoreState()
+    
+def drawLaterLandscapeSinglePage(canv,doc):
     """
     This is the Template of any later drawn Landscape Oriented Page
     """
@@ -681,7 +707,8 @@ class AutoDocTemplate(BaseDocTemplate):
                  title=None,
                  author=None,
                  subject=None,
-                 creator=None):
+                 creator=None,
+                 keywords=[]):
 
         BaseDocTemplate.__init__(self, filename,
                                  pagesize=A4,
@@ -692,7 +719,8 @@ class AutoDocTemplate(BaseDocTemplate):
                                  title=title,
                                  author=author,
                                  subject=subject,
-                                 creator=creator)
+                                 creator=creator,
+                                 keywords=keywords)
         #Portrait Frame
         frameP = Frame(0,0,self.pagesize[0],self.pagesize[1],
                        leftPadding=self.leftMargin,
@@ -731,15 +759,17 @@ class AutoDocTemplate(BaseDocTemplate):
 
         if onLaterPages is drawLaterLPage:
             templates.append( PageTemplate(id='LaterL',frames=frameL,onPage=onLaterPages,pagesize=landscape(self.pagesize)) )
-        elif onLaterPages is drawLaterLSPage:
+        elif onLaterPages is drawLaterLandscapeMultiPage:
             templates.append( self.getMultiColumnTemplate(tId='LaterL',onPager=onLaterPages) )
         elif onLaterPages is drawLaterPage:
             templates.append( PageTemplate(id='LaterP',frames=frameP,onPage=onLaterPages,pagesize=self.pagesize) )
 
         if onLaterSPages is drawLaterLPage:
             templates.append( PageTemplate(id='LaterL',frames=frameL,onPage=onLaterSPages,pagesize=landscape(self.pagesize)) )
-        elif onLaterSPages is drawLaterLSPage:
+        elif onLaterSPages is drawLaterLandscapeMultiPage:
             templates.append( self.getMultiColumnTemplate(tId='LaterL',onPager=onLaterSPages) )
+        elif onLaterSPages is drawLaterLandscapeSinglePage:
+            templates.append( self.getMultiColumnTemplate(frameCount=1,tId='LaterL',onPager=onLaterSPages) )
         elif onLaterSPages is drawLaterPage:
             templates.append( PageTemplate(id='LaterP',frames=frameP,onPage=onLaterSPages,pagesize=self.pagesize) )
 
@@ -1463,18 +1493,18 @@ class Styles(object):
         """
         print(indent+'name = '+str(style.name))
         print(indent+'parent = '+str(style.parent))
-        keylist = sorted(list(style.__dict__.keys()))
+        keylist = sorted(list(vars(style).keys()))
         keylist.remove('name')
         keylist.remove('parent')
         for key in keylist:
-            value = style.__dict__.get(key, None)
+            value = vars(style).get(key, None)
             print(indent + '%s = %s' % (key, value))
 
     def listStyles(self):
         """
         return list of styles in object
         """
-        keylist = sorted(list(self.__dict__))
+        keylist = sorted(list(vars(self)))
         keylist.remove('stylesheet')
 
         return keylist
