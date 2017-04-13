@@ -33,6 +33,15 @@ if is_python3:
 else:
     matplotlib.use('Agg')
 
+#basePath = os.path.dirname(os.path.realpath(os.path.join(__file__,"../")))
+#matplotlib.rcParams['datapath']=os.path.join(basePath,"mpl-data")
+#print(basePath)
+
+#import pandas as pd
+from matplotlib.lines import Line2D
+from matplotlib.patches import Rectangle
+import matplotlib.pyplot as plt
+
 # add color names, missing in matplotlib
 matplotlib.colors.cnames.update({'darkyellow': '#CC9900', 'lightmagenta':'#EDB2ED', 'lightred':'#FF8787'})
 
@@ -41,16 +50,6 @@ matplotlib.colors.cnames.update({'darkyellow': '#CC9900', 'lightmagenta':'#EDB2E
 #matplotlib.rcParams['ps.useafm'] = True
 #matplotlib.rcParams['pdf.use14corefonts'] = True
 #
-matplotlib.rcParams['axes.unicode_minus']=False
-
-#basePath = os.path.dirname(os.path.realpath(os.path.join(__file__,"../")))
-#matplotlib.rcParams['datapath']=os.path.join(basePath,"mpl-data")
-#print(basePath)
-
-#import pandas as pd
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
-
 from matplotlib.transforms import Bbox
 
 #from matplotlib import ticker
@@ -91,7 +90,7 @@ from cycler import cycler
 #plt.rc('axes', color_cycle=plotcolors)
 #matplotlib.rc('axes', prop_cycle=(cycler('color', plotcolors)))
 
-textsize = 12
+#textsize = 12
 #plt.rc('xtick', 
 #       labelsize=textsize,
 #       color=almost_black)
@@ -116,7 +115,6 @@ __font_dir__ = os.path.realpath(os.path.join(__font_dir__,"fonts"))
 fontprop=None
 
 #print(fontprop.get_name())
-
 #matplotlib.rcParams['font.family'] = 'sans-serif'
 #matplotlib.rcParams['font.sans-serif'] = font.get_name()
 #matplotlib.rcParams['font.style'] = 'normal'
@@ -149,7 +147,7 @@ def autoPdfImage(func):
             ax.plot(x,y,label="legendlabel")
             
             nrow,ncol=1,1
-            handels,labels= axl.get_legend_handles_labels()
+            handels,labels= ax.get_legend_handles_labels()
             
             leg_fig = ap.plt.figure(figsize=(canvaswidth, 0.2*nrow))
             
