@@ -2,7 +2,7 @@
 """
 Created on Wed Sep 16 11:11:12 2015
 
-@author: ecksjoh
+@author: johannes
 """
 from __future__ import print_function
 from __future__ import unicode_literals
