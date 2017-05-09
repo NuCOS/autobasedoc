@@ -30,7 +30,7 @@ from collections import OrderedDict
 from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT,TA_CENTER,TA_RIGHT
 from reportlab.lib.pagesizes import A4,landscape
 #from reportlab.lib.pagesizes import landscape,portrait
-from reportlab.lib.units import inch,cm,mm
+from reportlab.lib.units import inch,cm,mm#,pica
 
 from reportlab.platypus import (Image,Paragraph,PageBreak,
                                 Table,TableStyle,Spacer,Flowable,
@@ -69,7 +69,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 _basePath = os.path.realpath(os.path.dirname(__file__))
 
-print("autoreport __file__ is:",_basePath)
+#print("autoreport __file__ is:",_basePath)
 
 sys.path.append(_basePath)
 
@@ -504,11 +504,11 @@ def drawFirstLSPage(canv,doc):
     #set Page Size and
     #some variables
 
-    frame,pagesize = doc.getFrame("LaterL",orientation="Landscape")
+    frame,pagewidth = doc.getFrame("LaterL",orientation="Landscape")
     
     #print("Template testing...")
     
-    width,height = pagesize
+    pagesize=frame._width,frame._height
 
     canv.setPageSize( pagesize )
     canv.setFont(_baseFontName,doc.fontSize)
@@ -708,7 +708,8 @@ class AutoDocTemplate(BaseDocTemplate):
                  author=None,
                  subject=None,
                  creator=None,
-                 keywords=[]):
+                 keywords=[],
+                 debug=False):
 
         BaseDocTemplate.__init__(self, filename,
                                  pagesize=A4,
@@ -721,13 +722,20 @@ class AutoDocTemplate(BaseDocTemplate):
                                  subject=subject,
                                  creator=creator,
                                  keywords=keywords)
+
+        self.debug=debug
+        if self.debug:
+            self.showBoundary=1
+        else:
+            self.showBoundary=0
+
         #Portrait Frame
         frameP = Frame(0,0,self.pagesize[0],self.pagesize[1],
                        leftPadding=self.leftMargin,
                        rightPadding=self.rightMargin,
                        topPadding=self.topMargin,
                        bottomPadding=self.bottomMargin,
-                       showBoundary=1,
+                       showBoundary=self.showBoundary,
                        id='Portrait')
         #Landscape Frame
         frameL = Frame(0,0,self.pagesize[1],self.pagesize[0],
@@ -735,7 +743,7 @@ class AutoDocTemplate(BaseDocTemplate):
                        rightPadding=self.rightMargin,
                        topPadding=self.topMargin,
                        bottomPadding=self.bottomMargin,
-                       showBoundary=1,
+                       showBoundary=self.showBoundary,
                        id='Landscape')
 
         #Frame(self.leftMargin, self.bottomMargin, self.width, self.height, id='F1')
@@ -760,7 +768,7 @@ class AutoDocTemplate(BaseDocTemplate):
         if onLaterPages is drawLaterLPage:
             templates.append( PageTemplate(id='LaterL',frames=frameL,onPage=onLaterPages,pagesize=landscape(self.pagesize)) )
         elif onLaterPages is drawLaterLandscapeMultiPage:
-            templates.append( self.getMultiColumnTemplate(tId='LaterL',onPager=onLaterPages) )
+            templates.append( self.getMultiColumnTemplate(tId='LaterML',onPager=onLaterPages) )
         elif onLaterPages is drawLaterPage:
             templates.append( PageTemplate(id='LaterP',frames=frameP,onPage=onLaterPages,pagesize=self.pagesize) )
 
@@ -769,9 +777,10 @@ class AutoDocTemplate(BaseDocTemplate):
         elif onLaterSPages is drawLaterLandscapeMultiPage:
             templates.append( self.getMultiColumnTemplate(tId='LaterL',onPager=onLaterSPages) )
         elif onLaterSPages is drawLaterLandscapeSinglePage:
-            templates.append( self.getMultiColumnTemplate(frameCount=1,tId='LaterL',onPager=onLaterSPages) )
+            templates.append( self.getMultiColumnTemplate(frameCount=1,tId='LaterSL',onPager=onLaterSPages) )
         elif onLaterSPages is drawLaterPage:
             templates.append( PageTemplate(id='LaterP',frames=frameP,onPage=onLaterSPages,pagesize=self.pagesize) )
+
 
         self.addPageTemplates(templates)
 
@@ -871,15 +880,17 @@ class AutoDocTemplate(BaseDocTemplate):
         f = attrgetter("id")
         frame = None
 
-        for temp in self.pageTemplates[::-1]:
-            if f(temp) == framename:
+        for pt in self.pageTemplates[::-1]:
+            if f(pt) == framename:
                 #thisTemplate = temp
-                #print( temp.id )
-                for frame in temp.frames:
-                    #print( frame.id )
-                    if f(frame) == orientation:
+                if self.debug:
+                    print( f(pt) )
+                for fr in pt.frames:
+                    if self.debug:
+                        print( f(fr) )
+                    if f(fr) == orientation:
                         
-                        return frame,temp.pagesize
+                        return fr,fr._getAvailableWidth()
 
         if frame is None:
 #            #print ( thisTemplate.frames[0].id )
@@ -968,7 +979,7 @@ class AutoDocTemplate(BaseDocTemplate):
         
         #print(width,height)
             
-        frameWidth = (width-(self.leftMargin+self.rightMargin))/frameCount
+        frameWidth = (width-(self.leftMargin+self.rightMargin))/float(frameCount)
         frameHeight = height-(self.bottomMargin+self.topMargin)
         
         frames = []
@@ -977,16 +988,22 @@ class AutoDocTemplate(BaseDocTemplate):
             leftMargin = self.leftMargin + frame*frameWidth
             column = Frame(leftMargin, 
                            self.bottomMargin, 
-                           frameWidth, 
-                           frameHeight,
-                           id=fId,showBoundary=0)
+                           width=frameWidth, 
+                           height=frameHeight,
+                           leftPadding=0., 
+                           bottomPadding=0.,
+                           rightPadding=0., 
+                           topPadding=0.,
+                           id=fId,
+                           showBoundary=0)
             frames.append(column)
         
         fFrame = Frame(self.leftMargin, 
                            self.bottomMargin, 
                            width, 
                            height,
-                           id=fF,showBoundary=0)
+                           id=fF,
+                           showBoundary=0)
             
         frames.append(fFrame)
             
@@ -1067,7 +1084,26 @@ class AutoDocTemplate(BaseDocTemplate):
         else:
             frame = self.frame
             canv = self.canv
+            if self.debug:
+                frame.drawBoundary(canv)
             #handle scaling to fit a PdfImage on self.frame
+            
+            if isinstance(f,Table):
+                f.setStyle([("GRID",(0,0),(-1,-1),0.5,colors.black)])
+                
+            elif isinstance(f,Spacer):
+                pass
+
+#            elif isinstance(f,Spacer):
+#                pass
+#            
+#            elif isinstance(f,Flowable):
+#                if self.debug:
+#                    f._showBoundary()
+#                    print(#f.getSpaceBefore(),
+#                      frame._aH,"<--")
+#                      #frame._y1p)
+            
             if isinstance(f,ap.PdfImage):
                 #print("height of image:",f.drawHeight)
                 #print("height of frame:",frame._aH)
@@ -1085,10 +1121,14 @@ class AutoDocTemplate(BaseDocTemplate):
                 if f.drawWidth > frame._aW:
                     factor = frame._aW/f.drawWidth
                     f = self._scaleApply(f,factor)
-                    
-#                    print("PdfImage width exceeds width of available space on frame:",
-#                          frame.id,
-#                          "rescaling to fit frame geometry..." )
+                    if self.debug:
+                        print("PdfImage exceeds available width on frame:",
+                          frame.id,
+                          frame._aW/cm,
+                          frame._aH/cm,
+                          f.drawWidth/cm,
+                          f.drawHeight/cm,
+                          "rescaling to fit frame geometry..." )
 
                 #resizing image if drawHeight is exceeding the available frame Width _aH
                 if f.drawHeight > frame._aH:
@@ -1163,7 +1203,6 @@ class AutoDocTemplate(BaseDocTemplate):
         self.PageDecorated = True
 
     def afterFlowable(self, flowable):
-        #self.handle_flowable
         """
         Registers TOC entries.
         and outline entries
