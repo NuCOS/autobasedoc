@@ -17,13 +17,10 @@ importpath=os.path.realpath(os.path.join(__root__,folder))
 #print(importpath)
 sys.path.append(importpath)
 
-from autoreport import autoreport as ar 
+from autoreport import ar 
+from autoreport import ap
 
-ap=ar.ap
-
-ar._baseFontName,ar._baseFontNameB,ar._baseFontNameI,ar._baseFontNameBI = ar.setFonts(typ='sans-serif')
-
-fpath = os.path.join(ap.__font_dir__,'calibri.ttf')
+fpath = os.path.join(ar.__font_dir__,'calibri.ttf')
 font = ap.ft2font.FT2Font(fpath)
 ap.fontprop = ap.ttfFontProperty(font)
 
