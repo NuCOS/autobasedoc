@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 
 import unittest
 
-name = "autoreport"
+name = "autobasedoc"
 
 #action should be one of update/minor/major
 possible_action = ["major","minor","update", "hand"]
@@ -29,11 +29,11 @@ except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, 'r').read()
 
-long_description = read_md('README.md') # open(os.path.join(rootdir, 'README.md')).read() #
+long_description = read_md('README') # open(os.path.join(rootdir, 'README.md')).read() #
 
 # Python 2.7 or later needed
-if sys.version_info < (2, 7, 0, 'final', 0):
-    raise SystemExit('Python 2.7 or later is required!')
+if sys.version_info < (3, 5, 0, 'final', 0):
+    raise SystemExit('Python 3.5 or later is required!')
 
 # Build a list of all project modules
 packages = []
@@ -53,7 +53,7 @@ exec(open(os.path.join(name, 'version.py')).read())
 if action not in possible_action:
     raise SystemExit("action should be one of minor/major/update/hand")
 
-if not action == "hand":
+if 'sdist' in sys.argv and not action == "hand":
     version_i = [int(x) for x in version.split(".")]
     version_i[possible_action.index(action)] += 1
     version = ".".join([str(x) for x in version_i])
@@ -88,10 +88,10 @@ for dirname, dirnames, filenames in os.walk('doc'):
 
 setup(name=name,
       version=version,  # PEP440
-      description='autoreport - convenience reportlab tool',
+      description='autobasedoc - convenience reportlab tool',
       long_description=long_description,
-      url='https://github.com/skidzo/autoreport',
-      download_url = 'https://github.com/skidzo/autoreport/tarball/'+version,
+      url='https://github.com/skidzo/autobasedoc',
+      download_url = 'https://github.com/skidzo/autobasedoc/tarball/'+version,
       author='Oliver Braun, Johannes Eckstein',
       author_email='johannes.eckstein@nucos.de',
       license='BSD',
@@ -102,11 +102,8 @@ setup(name=name,
           'License :: OSI Approved :: BSD License',
           'Natural Language :: English',
           'Operating System :: OS Independent',
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.7',
-          'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6'
       ],
       keywords='reporting',
       packages=packages,
@@ -114,8 +111,8 @@ setup(name=name,
       package_data=package_data,
       scripts=scripts,
       data_files=data_files,
-      test_suite='setup.my_test_suite', 
-      install_requires=['reportlab','pdfrw','svglib'],
+      #test_suite='setup.my_test_suite', 
+      install_requires=['reportlab','pdfrw','svglib', 'cycler', 'matplotlib'],
       include_package_data=True,
 
       )
