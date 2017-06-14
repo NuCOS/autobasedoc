@@ -15,7 +15,7 @@ from functools import wraps
 from cycler import cycler
 
 import matplotlib
-from autoreport import is_python3
+from autobasedoc import is_python3
 if is_python3:
     matplotlib.use('Qt5Agg')
 else:
@@ -40,7 +40,7 @@ matplotlib.colors.cnames.update(missing_names)
 
 plt.ioff()
 
-from autoreport.pdfimage import PdfImage, PdfAsset, getScaledSvg
+from autobasedoc.pdfimage import PdfImage, PdfAsset, getScaledSvg
 
 fontprop=None
 

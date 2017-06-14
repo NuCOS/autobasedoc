@@ -15,8 +15,8 @@ from __future__ import print_function
 import os
 import sys
 
-from autoreport import is_python3
-import autoreport.autoplot as ap
+from autobasedoc import is_python3
+import autobasedoc.autoplot as ap
 
 from hashlib import sha1
 from operator import attrgetter
@@ -48,7 +48,7 @@ from reportlab.lib.fonts import addMapping
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-from autoreport import _baseFontNames
+from autobasedoc import _baseFontNames
 
 _basePath = os.path.realpath(os.path.dirname(__file__))
 
