@@ -66,9 +66,9 @@ if __name__ == "__main__":
 
     # If you want to append special behaviour of some Paragraph styles:
     styles.normal_left = ar.ParagraphStyle(name='normal', 
-                                              fontSize=6, 
-                                              leading = 7, 
-                                              alignment=ar.TA_LEFT)
+                                           fontSize=6, 
+                                           leading = 7, 
+                                           alignment=ar.TA_LEFT)
 
     # add title
     para = ar.Paragraph(u"Minimal Example Title", styles.title)
