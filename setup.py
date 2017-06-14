@@ -24,7 +24,7 @@ rootdir = os.path.abspath(os.path.dirname(__file__))
 # Restructured text project description read from file
 try:
     from pypandoc import convert
-    read_md = lambda f: convert(f, 'rst')
+    read_md = lambda f: convert(f, to='rst', format="md")
 except ImportError:
     print("warning: pypandoc module not found, could not convert Markdown to RST")
     read_md = lambda f: open(f, 'r').read()
