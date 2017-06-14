@@ -17,8 +17,8 @@ importpath=os.path.realpath(os.path.join(__root__,folder))
 #print(importpath)
 sys.path.append(importpath)
 
-from autoreport import ar 
-from autoreport import ap
+from autobasedoc import ar 
+from autobasedoc import ap
 
 fpath = os.path.join(ar.__font_dir__,'calibri.ttf')
 font = ap.ft2font.FT2Font(fpath)
