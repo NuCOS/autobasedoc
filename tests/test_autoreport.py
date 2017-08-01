@@ -127,6 +127,7 @@ def drawLaterPage(canv, doc):
 
     canv.restoreState()
 
+
 def drawLaterLPage(canv, doc):
     """
     This is the Template of any later drawn Landscape Oriented Page
@@ -151,6 +152,7 @@ def drawLaterLPage(canv, doc):
 
     canv.restoreState()
 
+
 class Test_AutoBaseDoc(unittest.TestCase):
     """
     test class for writing pdf file with AutoDocTemplate and Styles
@@ -160,6 +162,17 @@ class Test_AutoBaseDoc(unittest.TestCase):
         self.styles.normal_left = ar.ParagraphStyle(
             name='normal', fontSize=6, leading=7, alignment=ar.TA_LEFT)
 
+    performance test on add and multi build
+    This shows we dont have linear cost increase:
+
+    # 10 in 0.67 seconds; per ch_pair:= 0,067
+    # 100 in 2.964 seconds; per ch_pair:= 0,029
+    # 200 in 7.801 seconds; per ch_pair:= 0,039
+    # 400 in 27.064 seconds; per ch_pair:= 0,06016
+    # 500 in 44.385 seconds; per ch_pair:= 0,0887
+    # 600 in 63.645 seconds; per ch_pair:= 0,1
+    # 800 in 120.183 seconds; per ch_pair:= 0,15
+    # 1000 in 200.063 seconds; per ch_pair:= 0,2
     """
 
     @classmethod
@@ -249,13 +262,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
              testVal1['para']),
             (testVal2['ch'], testVal2['para'], testVal2['subch'],
              testVal1['para']),
-            (testVal1['ch'], testVal1['para'], testVal1['subch'],
-             testVal1['para']),
-            (testVal2['ch'], testVal2['para'], testVal2['subch'],
-             testVal1['para']),
-            (testVal1['ch'], testVal1['para'], testVal1['subch'],
-             testVal1['para']),
-        ] * 4
+        ] * 500
 
         for ch, ch_para, sub_ch, sub_ch_para in testData:
             with self.subTest(ch=ch,
@@ -348,7 +355,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
     #@unittest.skip("build doc")
     def buildDoc(self):
         """
-        build doc
+        # build doc
         """
         self.doc.multiBuild(self.contents)
 
