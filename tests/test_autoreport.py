@@ -20,6 +20,9 @@ sys.path.append(importpath)
 
 from autobasedoc import ar
 from autobasedoc import ap
+from autobasedoc import _baseFontNames
+
+from autobasedoc.autorpt import addPlugin
 
 fpath = os.path.join(ar.__font_dir__, 'calibri.ttf')
 font = ap.ft2font.FT2Font(fpath)
@@ -80,9 +83,83 @@ tcDict = {}
 # {value: testVal1.get(value) for value in testMeta.values()}
 
 
+def drawFirstPage(canv, doc):
+    """
+    This is the Title Page Template (Portrait Oriented)
+    """
+    canv.saveState()
+    #set Page Size
+    frame, pagesize = doc.getFrame('FirstP', orientation="Portrait")
+
+    canv.setPageSize(pagesize)
+    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+
+    doc.centerM = (frame._width-(frame._leftPadding + frame._rightPadding))/2
+    doc.leftM = frame._leftPadding
+    doc.rightM = frame._width-frame._rightPadding
+    doc.headM = (frame._height - frame._topPadding) + doc.topM
+    doc.bottomM = frame._bottomPadding - doc.topM
+
+    addPlugin(canv, doc, frame="First")
+
+    canv.restoreState()
+
+
+def drawLaterPage(canv, doc):
+    """
+    This is the Template of any following Portrait Oriented Page
+    """
+    canv.saveState()
+    #set Page Size
+
+    frame, pagesize = doc.getFrame('LaterP', orientation="Portrait")
+
+    canv.setPageSize(pagesize)
+    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+
+    doc.centerM = (frame._width - (frame._leftPadding + frame._rightPadding))/2
+    doc.leftM = frame._leftPadding
+    doc.rightM = frame._width-frame._rightPadding
+    doc.headM = (frame._height - frame._topPadding) + doc.topM
+    doc.bottomM = frame._bottomPadding - doc.topM
+
+    addPlugin(canv, doc, frame="Later")
+
+    canv.restoreState()
+
+def drawLaterLPage(canv, doc):
+    """
+    This is the Template of any later drawn Landscape Oriented Page
+    """
+    canv.saveState()
+
+    #set Page Size and
+    #some variables
+
+    frame, pagesize = doc.getFrame('LaterL', orientation="Landscape")
+
+    canv.setPageSize(pagesize)
+    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+
+    doc.centerM = (frame._width - (frame._leftPadding + frame._rightPadding))/2
+    doc.leftM = frame._leftPadding
+    doc.rightM = frame._width - frame._rightPadding
+    doc.headM = (frame._height - frame._topPadding) + doc.topM
+    doc.bottomM = frame._bottomPadding - doc.topM
+
+    addPlugin(canv, doc, frame="Later")
+
+    canv.restoreState()
+
 class Test_AutoBaseDoc(unittest.TestCase):
     """
-    test class for reading in of the test case catalogue for ldm
+    test class for writing pdf file with AutoDocTemplate and Styles
+
+    If you want to append special behaviour of some Paragraph styles::
+
+        self.styles.normal_left = ar.ParagraphStyle(
+            name='normal', fontSize=6, leading=7, alignment=ar.TA_LEFT)
+
     """
 
     @classmethod
@@ -95,29 +172,27 @@ class Test_AutoBaseDoc(unittest.TestCase):
 
         cls.outname = os.path.realpath(
             os.path.join(__examples__, "MinimalExample.pdf"))
-
-        # Begin of Documentation to Potable Document
-        cls.doc = ar.AutoDocTemplate(
-            cls.outname,
-            onFirstPage=ar.drawFirstPage,
-            onLaterPages=ar.drawLaterPage,
-            onLaterSPages=ar.drawLaterLPage)
-
-        cls.styles = ar.Styles()
-        cls.styles.registerStyles()
-
+        cls.doc = None
         cls.contents = []
+        cls.styles = None
 
     def setUp(self):
         """
         Hook method for setting up the test fixture before exercising it.
-        """
-        self.contents = []
-        #doc.multiBuild(story)
 
-        # If you want to append special behaviour of some Paragraph styles:
-        self.styles.normal_left = ar.ParagraphStyle(
-            name='normal', fontSize=6, leading=7, alignment=ar.TA_LEFT)
+        Has to be run to set up the test
+        """
+        # Begin of Documentation to Potable Document
+        self.doc = ar.AutoDocTemplate(
+            self.outname,
+            onFirstPage=drawFirstPage,
+            onLaterPages=drawLaterPage,
+            onLaterSPages=drawLaterLPage)
+
+        self.styles = ar.Styles()
+        self.styles.registerStyles()
+
+        self.contents = []
 
     def tearDown(self):
         """
@@ -125,10 +200,14 @@ class Test_AutoBaseDoc(unittest.TestCase):
         """
         self.buildDoc()
 
+    @unittest.skip("simple test")
     def test_buildThrough(self, testTemplate='LaterP'):
         """
         test run through story
         """
+        # special behaviour of some Paragraph styles:
+        self.styles.normal_left = ar.ParagraphStyle(
+            name='normal', fontSize=6, leading=7, alignment=ar.TA_LEFT)
 
         self.addTitle(inTemplate=testTemplate, outTemplate=testTemplate)
         self.addToc()
@@ -151,79 +230,120 @@ class Test_AutoBaseDoc(unittest.TestCase):
         self.addParagraph()
         self.addFigure()
 
+    def test_bigBuildThrough(self):
+        """
+        test run through big story
+        """
+        # special behaviour of some Paragraph styles:
+        self.styles.normal_left = ar.ParagraphStyle(
+            name='normal', fontSize=6, leading=7, alignment=ar.TA_LEFT)
+
+        testTemplate = 'LaterP'
+
+        self.addTitle(inTemplate=testTemplate, outTemplate=testTemplate)
+        self.addToc()
+
+        testData = [
+            # ch, ch_para, sub_ch, sub_ch_para
+            (testVal1['ch'], testVal1['para'], testVal1['subch'],
+             testVal1['para']),
+            (testVal2['ch'], testVal2['para'], testVal2['subch'],
+             testVal1['para']),
+            (testVal1['ch'], testVal1['para'], testVal1['subch'],
+             testVal1['para']),
+            (testVal2['ch'], testVal2['para'], testVal2['subch'],
+             testVal1['para']),
+            (testVal1['ch'], testVal1['para'], testVal1['subch'],
+             testVal1['para']),
+        ] * 4
+
+        for ch, ch_para, sub_ch, sub_ch_para in testData:
+            with self.subTest(ch=ch,
+                              ch_para=ch_para,
+                              sub_ch=sub_ch,
+                              sub_ch_para=sub_ch_para):
+
+                self.addChapter(nextTemplate=testTemplate, para=ch)
+                self.addParagraph(para=ch_para)
+                self.addSubChapter(para=sub_ch)
+                self.addParagraph(para=sub_ch_para)
+
     #@unittest.skip("add title")
-    def addTitle(self, inTemplate='LaterL', outTemplate='LaterL'):
+    def addTitle(self, 
+                 para=u"Minimal Example Title",
+                 inTemplate='LaterL', 
+                 outTemplate='LaterL'):
         """
         # add title
         """
         #ar.PageNext(self.contents, nextTemplate=inTemplate)
         #self.contents.append(ar.PageBreak())
-        para = ar.Paragraph(u"Minimal Example Title", self.styles.title)
+        para = ar.Paragraph(para, self.styles.title)
         self.contents.append(para)
         ar.PageNext(self.contents, nextTemplate=outTemplate)
         self.contents.append(ar.PageBreak())
 
-    def addToc(self):
+    #@unittest.skip("add toc")
+    def addToc(self, para=u"Inhaltsverzeichnis"):
         """
         # add table of contents
         # Create an instance of TableOfContents. Override the level styles (optional)
         # and add the object to the story
         """
         toc = ar.doTabelOfContents()
-        self.contents.append(ar.Paragraph(u"Inhaltsverzeichnis", self.styles.h1))
+        self.contents.append(ar.Paragraph(para, self.styles.h1))
         self.contents.append(toc)
 
     #@unittest.skip("add chapter")
-    def addChapter(self, nextTemplate='LaterL'):
+    def addChapter(self,
+                   para="Text",
+                   nextTemplate='LaterL'):
         """
         # add chapter
         """
         ar.PageNext(self.contents, nextTemplate=nextTemplate)
         # Begin of First Chapter
         self.contents.append(ar.PageBreak())
-        part = ar.doHeading("Text", self.styles.h1)
+        part = ar.doHeading(para, self.styles.h1)
         for p in part:
             self.contents.append(p)
 
     #@unittest.skip("add subchapter")
-    def addSubChapter(self):
+    def addSubChapter(self, para=testVal1["subch"]):
         """
         # add subchapter
         """
-        part = ar.doHeading(testVal1["subch"], self.styles.h2)
+        part = ar.doHeading(para, self.styles.h2)
         for p in part:
             self.contents.append(p)
 
     #@unittest.skip("add paragraph")
-    def addParagraph(self):
+    def addParagraph(self, para=u"""My Text that I can write here
+            or take it from somewhere like shown in the next paragraph."""):
         """
         # add paragraph
         """
-        para = ar.Paragraph(
-            u"""My Text that I can write here
-            or take it from somewhere like shown in the next paragraph.""",
-            self.styles.normal)
+        para = ar.Paragraph(para, self.styles.normal)
         self.contents.append(para)
 
     #@unittest.skip("add figure")
-    def addFigure(self, title=u"my first data"):
+    def addFigure(self, para=u"my first data"):
         """
         # add figure
         """
-        para = ar.Paragraph(u"Fig. " + str(self.doc.figcounter()) + title,
+        para = ar.Paragraph(u"Fig. " + str(self.doc.figcounter()) + para,
                             self.styles.caption)
         self.contents.append(para)
 
     #@unittest.skip("add table")
-    def addTable(self, title=u"Table is here."):
+    def addTable(self, para=u"Table is here."):
         """
         # add table
         """
-        para = ar.Paragraph(u"Fig. " + str(self.doc.figcounter()) + title,
+        para = ar.Paragraph(u"Fig. " + str(self.doc.figcounter()) + para,
                             self.styles.caption)
         self.contents.append(para)
-        self.contents.append(ar.Paragraph("Table is here.",
-                                          self.styles.normal))
+        # self.contents.append(ar.Paragraph(para, self.styles.normal))
 
     #@unittest.skip("build doc")
     def buildDoc(self):
