@@ -119,35 +119,62 @@ class Test_AutoBaseDoc(unittest.TestCase):
         self.styles.normal_left = ar.ParagraphStyle(
             name='normal', fontSize=6, leading=7, alignment=ar.TA_LEFT)
 
-        # add title
-        para = ar.Paragraph(u"Minimal Example Title", self.styles.title)
-        self.contents.append(para)
-        self.contents.append(ar.PageBreak())
-
-        # Create an instance of TableOfContents. Override the level styles (optional)
-        # and add the object to the story
-        toc = ar.doTabelOfContents()
-        self.contents.append(ar.Paragraph(u"Inhaltsverzeichnis", self.styles.h1))
-        self.contents.append(toc)
-
     def tearDown(self):
         """
         Hook method for deconstructing the test fixture after testing it.
         """
-        pass
+        self.buildDoc()
 
-    def test_addTitle(self, inTemplate='LaterL', outTemplate='LaterL'):
+    def test_buildThrough(self, testTemplate='LaterP'):
+        """
+        test run through story
+        """
+
+        self.addTitle(inTemplate=testTemplate, outTemplate=testTemplate)
+        self.addToc()
+        self.addChapter(nextTemplate=testTemplate)
+        self.addParagraph()
+        self.addSubChapter()
+        self.addParagraph()
+        self.addSubChapter()
+        self.addParagraph()
+        self.addTable()
+        self.addParagraph()
+        self.addFigure()
+        self.addChapter()
+        self.addParagraph()
+        self.addSubChapter()
+        self.addParagraph()
+        self.addSubChapter()
+        self.addParagraph()
+        self.addTable()
+        self.addParagraph()
+        self.addFigure()
+
+    #@unittest.skip("add title")
+    def addTitle(self, inTemplate='LaterL', outTemplate='LaterL'):
         """
         # add title
         """
-        ar.PageNext(self.contents, nextTemplate=inTemplate)
-        self.contents.append(ar.PageBreak())
+        #ar.PageNext(self.contents, nextTemplate=inTemplate)
+        #self.contents.append(ar.PageBreak())
         para = ar.Paragraph(u"Minimal Example Title", self.styles.title)
         self.contents.append(para)
         ar.PageNext(self.contents, nextTemplate=outTemplate)
         self.contents.append(ar.PageBreak())
 
-    def test_addChapter(self, nextTemplate='LaterL'):
+    def addToc(self):
+        """
+        # add table of contents
+        # Create an instance of TableOfContents. Override the level styles (optional)
+        # and add the object to the story
+        """
+        toc = ar.doTabelOfContents()
+        self.contents.append(ar.Paragraph(u"Inhaltsverzeichnis", self.styles.h1))
+        self.contents.append(toc)
+
+    #@unittest.skip("add chapter")
+    def addChapter(self, nextTemplate='LaterL'):
         """
         # add chapter
         """
@@ -158,7 +185,8 @@ class Test_AutoBaseDoc(unittest.TestCase):
         for p in part:
             self.contents.append(p)
 
-    def test_addSubChapter(self):
+    #@unittest.skip("add subchapter")
+    def addSubChapter(self):
         """
         # add subchapter
         """
@@ -166,7 +194,8 @@ class Test_AutoBaseDoc(unittest.TestCase):
         for p in part:
             self.contents.append(p)
 
-    def test_addParagraph(self):
+    #@unittest.skip("add paragraph")
+    def addParagraph(self):
         """
         # add paragraph
         """
@@ -176,7 +205,8 @@ class Test_AutoBaseDoc(unittest.TestCase):
             self.styles.normal)
         self.contents.append(para)
 
-    def test_addFigure(self, title=u"my first data"):
+    #@unittest.skip("add figure")
+    def addFigure(self, title=u"my first data"):
         """
         # add figure
         """
@@ -184,9 +214,10 @@ class Test_AutoBaseDoc(unittest.TestCase):
                             self.styles.caption)
         self.contents.append(para)
 
-    def test_addTable(self, title=u"Table is here."):
+    #@unittest.skip("add table")
+    def addTable(self, title=u"Table is here."):
         """
-        # add figure
+        # add table
         """
         para = ar.Paragraph(u"Fig. " + str(self.doc.figcounter()) + title,
                             self.styles.caption)
@@ -194,9 +225,10 @@ class Test_AutoBaseDoc(unittest.TestCase):
         self.contents.append(ar.Paragraph("Table is here.",
                                           self.styles.normal))
 
-    def test_buildDoc(self):
+    #@unittest.skip("build doc")
+    def buildDoc(self):
         """
-        last test
+        build doc
         """
         self.doc.multiBuild(self.contents)
 
