@@ -41,47 +41,6 @@ fontprop = ap.fm.FontProperties(
 name_loc = "."  #"../data"
 __examples__ = os.path.realpath(os.path.join(__root__, name_loc))
 
-# create some Data first
-
-testVal1 = dict(
-    ch="Kapitel",
-    subch="Unterkapitel",
-    para="What I always wanted to say about data that has some data title",
-    mu=100,
-    sigma=15)
-
-testVal2 = dict(
-    ch="Test Values",
-    subch="Test Case",
-    para="What I always wanted to say about data that has some data title",
-    mu=80,
-    sigma=23)
-
-testMeta = dict(
-    chapter1=dict(
-        para1=f"""{testVal1["para"]}
-        {testVal2["para"]}
-        {testVal1["para"]}
-        {testVal2["para"]}""",
-        subchapter=testVal1["ch"],
-        displayName=f"%s 1" % testVal1["ch"],
-        x=np.random.uniform(1, 6, size=150),
-        y=testVal1["mu"] + testVal1["sigma"] * np.random.randn(10000),
-        items=[u"Unterkapitel 1", u"Unterkapitel 2"]),
-    chapter2=dict(
-        para1=f"""{testVal1["para"]}
-        {testVal2["para"]}
-        {testVal1["para"]}
-        {testVal2["para"]}""",
-        subchapter=testVal2["ch"],
-        displayName=f"%s 2" % testVal2["ch"],
-        x=testVal1["mu"] + testVal1["sigma"] * np.random.randn(10000),
-        y=testVal2["mu"] + testVal2["sigma"] * np.random.randn(10000),
-        items=[u"Unterkapitel 1", u"Unterkapitel 2"]))
-
-tcDict = {}
-# {value: testVal1.get(value) for value in testMeta.values()}
-
 
 def drawFirstPage(canv, doc):
     """
@@ -94,9 +53,10 @@ def drawFirstPage(canv, doc):
     canv.setPageSize(pagesize)
     canv.setFont(_baseFontNames["normal"], doc.fontSize)
 
-    doc.centerM = (frame._width-(frame._leftPadding + frame._rightPadding))/2
+    doc.centerM = (frame._width -
+                   (frame._leftPadding + frame._rightPadding)) / 2
     doc.leftM = frame._leftPadding
-    doc.rightM = frame._width-frame._rightPadding
+    doc.rightM = frame._width - frame._rightPadding
     doc.headM = (frame._height - frame._topPadding) + doc.topM
     doc.bottomM = frame._bottomPadding - doc.topM
 
@@ -117,9 +77,10 @@ def drawLaterPage(canv, doc):
     canv.setPageSize(pagesize)
     canv.setFont(_baseFontNames["normal"], doc.fontSize)
 
-    doc.centerM = (frame._width - (frame._leftPadding + frame._rightPadding))/2
+    doc.centerM = (frame._width -
+                   (frame._leftPadding + frame._rightPadding)) / 2
     doc.leftM = frame._leftPadding
-    doc.rightM = frame._width-frame._rightPadding
+    doc.rightM = frame._width - frame._rightPadding
     doc.headM = (frame._height - frame._topPadding) + doc.topM
     doc.bottomM = frame._bottomPadding - doc.topM
 
@@ -142,7 +103,8 @@ def drawLaterLPage(canv, doc):
     canv.setPageSize(pagesize)
     canv.setFont(_baseFontNames["normal"], doc.fontSize)
 
-    doc.centerM = (frame._width - (frame._leftPadding + frame._rightPadding))/2
+    doc.centerM = (frame._width -
+                   (frame._leftPadding + frame._rightPadding)) / 2
     doc.leftM = frame._leftPadding
     doc.rightM = frame._width - frame._rightPadding
     doc.headM = (frame._height - frame._topPadding) + doc.topM
@@ -155,25 +117,25 @@ def drawLaterLPage(canv, doc):
 
 class Test_AutoBaseDoc(unittest.TestCase):
     """
-    test class for writing pdf file with AutoDocTemplate and Styles
+    test class for writing pdf file with PdfImage from::
 
-    If you want to append special behaviour of some Paragraph styles::
+        from autobasedoc import ap
 
-        self.styles.normal_left = ar.ParagraphStyle(
-            name='normal', fontSize=6, leading=7, alignment=ar.TA_LEFT)
-
-    performance test on add and multi build
-    This shows we dont have linear cost increase:
-
-    # 10 in 0.67 seconds; per ch_pair:= 0,067
-    # 100 in 2.964 seconds; per ch_pair:= 0,029
-    # 200 in 7.801 seconds; per ch_pair:= 0,039
-    # 400 in 27.064 seconds; per ch_pair:= 0,06016
-    # 500 in 44.385 seconds; per ch_pair:= 0,0887
-    # 600 in 63.645 seconds; per ch_pair:= 0,1
-    # 800 in 120.183 seconds; per ch_pair:= 0,15
-    # 1000 in 200.063 seconds; per ch_pair:= 0,2
     """
+
+    testVal1 = dict(
+        ch="Kapitel",
+        subch="Unterkapitel",
+        para="What I always wanted to say about data that has some data title",
+        mu=100,
+        sigma=15)
+
+    testVal2 = dict(
+        ch="Test Values",
+        subch="Test Case",
+        para="What I always wanted to say about data that has some data title",
+        mu=80,
+        sigma=23)
 
     @classmethod
     def setUpClass(cls):
@@ -234,51 +196,43 @@ class Test_AutoBaseDoc(unittest.TestCase):
                 self.addChapter(nextTemplate=templt)
                 self.addParagraph()
                 self.addSubChapter()
+                self.addLegendWithFigure()
                 self.addParagraph()
                 self.addSubChapter()
                 self.addParagraph()
                 self.addTable()
                 self.addParagraph()
+                self.addLegendWithFigure()
+
+    #@unittest.skip("simple test")
+    def test_buildSimple(self, testTemplate='LaterP'):
+        """
+        test run figure simple
+
+        switch template on figure
+        """
+
+        testTemplate = ['LaterP', 'LaterL']
+
+        for templt in testTemplate:
+            with self.subTest(templt=templt):
                 self.addFigure()
 
-    def test_bigBuildThrough(self, testTemplate='LaterP'):
+    def test_buildLegendWithFigure(self, testTemplate='LaterP'):
         """
-        test run through big story
+        test run figure simple
+
+        switch template on figure
         """
-        # special behaviour of some Paragraph styles:
-        self.styles.normal_left = ar.ParagraphStyle(name='normal',
-                                                    fontSize=6,
-                                                    leading=7,
-                                                    alignment=ar.TA_LEFT)
 
-        self.addTitle(outTemplate=testTemplate)
-        self.addToc()
+        testTemplate = ['LaterP', 'LaterL']
 
-        testData = [
-            # ch, ch_para, sub_ch, sub_ch_para
-            (testVal1['ch'], testVal1['para'], testVal1['subch'],
-             testVal1['para']),
-            (testVal2['ch'], testVal2['para'], testVal2['subch'],
-             testVal1['para']),
-        ] * 20
-
-        for ch, ch_para, sub_ch, sub_ch_para in testData:
-            with self.subTest(ch=ch,
-                              ch_para=ch_para,
-                              sub_ch=sub_ch,
-                              sub_ch_para=sub_ch_para):
-
-                self.addChapter(nextTemplate=testTemplate,
-                                para=ch,
-                                sty=self.styles.normal_left)
-                self.addParagraph(para=ch_para)
-                self.addSubChapter(para=sub_ch)
-                self.addParagraph(para=sub_ch_para)
+        for templt in testTemplate:
+            with self.subTest(templt=templt):
+                self.addLegendWithFigure()
 
     #@unittest.skip("add title")
-    def addTitle(self, 
-                 para=u"Minimal Example Title",
-                 outTemplate='LaterL'):
+    def addTitle(self, para=u"Minimal Example Title", outTemplate='LaterL'):
         """
         # add title
         """
@@ -300,10 +254,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         self.contents.append(toc)
 
     #@unittest.skip("add chapter")
-    def addChapter(self,
-                   para="Text",
-                   nextTemplate='LaterL',
-                   sty=None):
+    def addChapter(self, para="Text", nextTemplate='LaterL', sty=None):
         """
         # add chapter
         """
@@ -327,9 +278,10 @@ class Test_AutoBaseDoc(unittest.TestCase):
             self.contents.append(p)
 
     #@unittest.skip("add paragraph")
-    def addParagraph(self, para=u"""My Text that I can write here
+    def addParagraph(self,
+                     para=u"""My Text that I can write here
             or take it from somewhere like shown in the next paragraph.""",
-            sty=None):
+                     sty=None):
         """
         # add paragraph
         """
@@ -337,15 +289,88 @@ class Test_AutoBaseDoc(unittest.TestCase):
             sty = self.styles.normal
         para = ar.Paragraph(para, sty)
         self.contents.append(para)
+        
+    def addFigure(self):
+        """
+        # add SIMPLE figure
+        """
+
+        img = self.simpleFigure()
+        
+        self.contents.append(img)
 
     #@unittest.skip("add figure")
-    def addFigure(self, para=u"my first data"):
+    def addLegendWithFigure(self,
+                  para=u"""My Text that I can write here
+            or take it from somewhere like shown in the next paragraph.""",
+                  titlename=u"my first plot with autobasedoc",
+                  sty=None):
         """
         # add figure
         """
         para = ar.Paragraph(u"Fig. " + str(self.doc.figcounter()) + para,
                             self.styles.caption)
+
         self.contents.append(para)
+
+        if sty is None:
+            sty = self.styles
+
+        img, leg = self.plotFigure()
+        self.contents.append(leg)
+        self.contents.append(img)
+
+        #ar.doImage(img, self.doc, titlename, sty)
+
+    @ap.autoPdfImg
+    def simpleFigure(canvaswidth=5):#[inch]
+        fig, ax = ap.plt.subplots() #figsize=(canvaswidth,canvaswidth)
+        fig.suptitle("My Plot",fontproperties=fontprop)
+        x=[1,2,3,4,5,6,7,8]
+        y=[1,6,8,3,9,3,4,2]
+        ax.plot(x,y,label="legendlabel")
+        
+        ax.legend(mode=None,
+               borderaxespad=0.,
+               loc='center',        # the location of the legend handles
+               handleheight=None,   # the height of the legend handles
+               #fontsize=9,         # prop beats fontsize
+               markerscale=None,
+               prop=fontprop,
+               fancybox=True,
+               )
+        
+        return fig
+
+    @ap.autoPdfImage
+    def plotFigure(canvaswidth=5):  #[inch]
+
+        fig, ax = ap.plt.subplots() #figsize=(canvaswidth, canvaswidth)
+        fig.suptitle("My Plot", fontproperties=fontprop)
+        x = [1, 2, 3, 4, 5, 6, 7, 8]
+        y = [1, 6, 8, 3, 9, 3, 4, 2]
+        ax.plot(x, y, label="legendlabel")
+        nrow, ncol = 1, 1
+        handels, labels = ax.get_legend_handles_labels()
+
+        leg_fig = ap.plt.figure() #figsize=(canvaswidth, 0.2 * nrow)
+
+        leg = leg_fig.legend(
+            handels,
+            labels,  #labels = tuple(bar_names)
+            ncol=ncol,
+            mode=None,
+            borderaxespad=0.,
+            loc='center',  # the location of the legend handles
+            handleheight=None,  # the height of the legend handles
+            #fontsize=9,         # prop beats fontsize
+            markerscale=None,
+            frameon=False,
+            prop=fontprop
+            #fancybox=True,
+        )
+
+        return fig, leg_fig, leg
 
     #@unittest.skip("add table")
     def addTable(self, para=u"Table is here."):
@@ -358,6 +383,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         # self.contents.append(ar.Paragraph(para, self.styles.normal))
 
     #@unittest.skip("build doc")
+
     def buildDoc(self):
         """
         # build doc
