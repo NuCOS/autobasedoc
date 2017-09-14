@@ -10,16 +10,16 @@ import unittest
 
 name = "autobasedoc"
 
-#action should be one of update/minor/major
-possible_action = ["major", "minor", "update", "test", "sdist", "install"]
-update_action = sys.argv[-1]
-
-print(update_action, sys.argv)
-
-if update_action in possible_action:
-    action = update_action
-else:
-    action = "update"
+##action should be one of update/minor/major
+#possible_action = ["major", "minor", "update", "test", "sdist", "install"]
+#update_action = sys.argv[-1]
+#
+#print(update_action, sys.argv)
+#
+#if update_action in possible_action:
+#    action = update_action
+#else:
+#    action = "update"
 
 def my_test_suite():
     test_loader = unittest.TestLoader()
@@ -60,16 +60,16 @@ exec(open(os.path.join(name, 'version.py')).read())
 #if action not in possible_action:
 #    raise SystemExit("action should be one of minor/major/update/test")
 
-if not action == "sdist" and not action == "test":
-    version_i = [int(x) for x in version.split(".")]
-    version_i[possible_action.index(action)] += 1
-    if version_i[2] > 9:
-        version_i[2] = 0
-        version_i[possible_action.index("minor")] += 1
-    version = ".".join([str(x) for x in version_i])
-
-    with open(os.path.join(name, 'version.py'), 'w') as f:
-        f.write("version='"+version+"'")
+#if not action == "sdist" and not action == "test":
+#    version_i = [int(x) for x in version.split(".")]
+#    version_i[possible_action.index(action)] += 1
+#    if version_i[2] > 9:
+#        version_i[2] = 0
+#        version_i[possible_action.index("minor")] += 1
+#    version = ".".join([str(x) for x in version_i])
+#
+#    with open(os.path.join(name, 'version.py'), 'w') as f:
+#        f.write("version='"+version+"'")
 
 print("Version:", version)
 
