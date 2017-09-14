@@ -11,8 +11,12 @@ import unittest
 name = "autobasedoc"
 
 #action should be one of update/minor/major
-possible_action = ["major","minor","update", "hand"]
-action = "update"
+possible_action = ["major","minor","update", "test"]
+update_action = sys.argv[-1]
+if update_action in possible_action:
+    action = update_action
+else:
+    action = "update"
 
 def my_test_suite():
     test_loader = unittest.TestLoader()
@@ -50,15 +54,16 @@ package_data = {} #{name: [os.path.join(name, 'tests', 'prt.txt')]}
 exec(open(os.path.join(name, 'version.py')).read())
 
 #update the version count according to action
-if action not in possible_action:
-    raise SystemExit("action should be one of minor/major/update/hand")
+#if action not in possible_action:
+#    raise SystemExit("action should be one of minor/major/update/test")
 
-if 'sdist' in sys.argv and not action == "hand":
+if not action == "test":
     version_i = [int(x) for x in version.split(".")]
     version_i[possible_action.index(action)] += 1
+    if version_i[2] > 9:
+        version_i[2] = 0
+        version_i[possible_action.index("minor")] += 1
     version = ".".join([str(x) for x in version_i])
-
-    
 
     with open(os.path.join(name, 'version.py'), 'w') as f:
         f.write("version='"+version+"'")
@@ -114,5 +119,4 @@ setup(name=name,
       #test_suite='setup.my_test_suite', 
       install_requires=['reportlab','pdfrw','svglib', 'cycler', 'matplotlib'],
       include_package_data=True,
-
       )
