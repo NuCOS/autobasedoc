@@ -1657,6 +1657,8 @@ def doHeading(title, sty,
         level = 1
     elif style == 'Heading3':
         level = 2
+    else:
+        level = 0
 
     bm = Bookmark(outlineText, level)
 

@@ -12,3 +12,8 @@ The focus of this package is in including matplotlib figures into the reportlab 
 Large portions are based on Examples of code, that where posted on e.g. stackoverflow and other internet resources, those examples all have been modified respecting the licenses under which they have been released, see LICENSE.md.
 
 The reading and contributing of code and documentation or examples is encouraged, please feel free to fork and request merges...
+
+## tests
+
+under linux there is a genie.sh test runner.
+you can start tests with nose2
