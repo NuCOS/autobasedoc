@@ -11,8 +11,11 @@ import unittest
 name = "autobasedoc"
 
 #action should be one of update/minor/major
-possible_action = ["major","minor","update", "test"]
+possible_action = ["major", "minor", "update", "test", "sdist", "install"]
 update_action = sys.argv[-1]
+
+print(update_action, sys.argv)
+
 if update_action in possible_action:
     action = update_action
 else:
@@ -57,7 +60,7 @@ exec(open(os.path.join(name, 'version.py')).read())
 #if action not in possible_action:
 #    raise SystemExit("action should be one of minor/major/update/test")
 
-if not action == "test":
+if not action == "sdist" and not action == "test":
     version_i = [int(x) for x in version.split(".")]
     version_i[possible_action.index(action)] += 1
     if version_i[2] > 9:

@@ -33,7 +33,7 @@ python info.py
 echo "----------------------------------------------------"
 sleep 1
 echo "now install the autobasedoc in python 3"
-python setup.py install
+python setup.py install test
 ####################################
 echo "----------------------------------------------------"
 sleep 1
