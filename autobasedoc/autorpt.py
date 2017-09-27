@@ -45,6 +45,7 @@ from reportlab.lib.styles import ParagraphStyle
 
 # Configure Fonts!
 from reportlab.lib.fonts import addMapping
+from reportlab.pdfbase.pdfdoc import PDFInfo
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
@@ -680,9 +681,13 @@ class AutoDocTemplate(BaseDocTemplate):
                  title=None,
                  author=None,
                  subject=None,
+                 producer=None,
                  creator=None,
                  keywords=[],
                  debug=False):
+        
+        if producer is not None:
+            PDFInfo.producer = producer
 
         BaseDocTemplate.__init__(self, filename,
                                  pagesize=A4,
@@ -693,6 +698,7 @@ class AutoDocTemplate(BaseDocTemplate):
                                  title=title,
                                  author=author,
                                  subject=subject,
+                                 producer=producer,
                                  creator=creator,
                                  keywords=keywords)
 

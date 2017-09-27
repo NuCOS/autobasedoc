@@ -4,3 +4,11 @@ build/
 *.py[cod]
 *.bak
 tests/*.pdf
+
+# Distribution / packaging
+dist/
+.eggs/
+*.egg-info/
+
+# nose tests
+nose2-junit_py3.xml
