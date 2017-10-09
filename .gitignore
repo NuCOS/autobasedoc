@@ -5,6 +5,10 @@ build/
 *.bak
 tests/*.pdf
 
+# Sphinx
+
+_build/
+
 # Distribution / packaging
 dist/
 .eggs/

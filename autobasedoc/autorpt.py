@@ -30,11 +30,13 @@ from reportlab.lib.units import inch, cm, mm#,pica
 from reportlab.platypus import (Image, Paragraph, PageBreak,
                                 Table, TableStyle, Spacer, Flowable,
                                 KeepTogether, FrameBreak)
+
 from reportlab.platypus.doctemplate import (BaseDocTemplate, PageTemplate,
                                             NextPageTemplate, _doNothing,
                                             LayoutError, ActionFlowable,
                                             FrameActionFlowable, _addGeneratedContent,
                                             _fSizeString, NullActionFlowable)
+
 from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.platypus.frames import Frame
 from reportlab.platypus.flowables import SlowPageBreak, DDIndenter
@@ -62,7 +64,7 @@ if _basePath.endswith("library.zip"):
 __font_dir__ = os.path.realpath(os.path.join(_basePath, "fonts"))
 #__assets_dir__ = os.path.realpath(os.path.join(_basePath,"assets"))
 
-### setup colors
+#  setup colors
 #  only adding items of type key:str AND value:Color to the color_dict
 color_dict = {}
 
@@ -348,7 +350,7 @@ def addPlugin(canv, doc, frame="First"):
 
         pitem.image.drawOn(canv, x, y)
         #print("added image")
-    ###########################################################################
+
     lkeys = []
 
     if doc.pageInfos:
@@ -732,9 +734,11 @@ class AutoDocTemplate(BaseDocTemplate):
         """
         Here we populate our page templates
         Page templates are separated into three stages:
-            - on first page
-            - on later page
-            - on later special page
+
+        - on first page
+        - on later page
+        - on later special page
+
         """
         f = attrgetter("__name__")
 
@@ -935,8 +939,7 @@ class AutoDocTemplate(BaseDocTemplate):
         This is customized for landscape format pages.
         if you want portrait, set pagesizeL to False
         
-        Frame Parameters:
-        -----------------
+        Frame Parameters::
         
             x1, 
             y1, 
@@ -1088,16 +1091,16 @@ class AutoDocTemplate(BaseDocTemplate):
                 f.setStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.black)])
             elif isinstance(f, Spacer):
                 pass
-
-#            elif isinstance(f,Spacer):
-#                pass
-#            elif isinstance(f,Flowable):
-#                if self.debug:
-#                    f._showBoundary()
-#                    print(#f.getSpaceBefore(),
-#                      frame._aH,"<--")
-#                      #frame._y1p)
-
+                """
+                elif isinstance(f,Spacer):
+                    pass
+                elif isinstance(f,Flowable):
+                    if self.debug:
+                        f._showBoundary()
+                        print(#f.getSpaceBefore(),
+                            frame._aH,"<--")
+                            #frame._y1p)
+                """
             if isinstance(f, ap.PdfImage):
                 #print("height of image:",f.drawHeight)
                 #print("height of frame:",frame._aH)
@@ -1126,9 +1129,11 @@ class AutoDocTemplate(BaseDocTemplate):
 
                 #resizing image if drawHeight is exceeding the available frame Width _aH
                 if f.drawHeight > frame._aH:
-#                    print("PdfImage height exceeds height of available space on frame:",
-#                          frame.id,
-#                          "rescaling to fit frame geometry..." )
+                    
+                    #print("PdfImage height exceeds height of available space on frame:",
+                    #      frame.id,
+                    #      "rescaling to fit frame geometry..." )
+
                     factor = frame._aH/f.drawHeight
                     f = self._scaleApply(f, factor)
                 #print("spaceBelow:",frame._aH-f.drawHeight )
@@ -1191,7 +1196,7 @@ class AutoDocTemplate(BaseDocTemplate):
         """
         build the document using the flowables.  Annotate the first page using the onFirstPage
         function and later pages using the onLaterPages function.  The onXXX pages should follow
-        the signature
+        the signature::
 
             def myOnFirstPage(canvas, document):
                 # do annotations and modify the document

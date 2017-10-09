@@ -1,33 +1,23 @@
+Example
+=======
+
+I let the example in one piece, there are three examples, that will be compiled to one pdf-file:
+
+.. code-block:: python
+
     import os
     from cycler import cycler
 
     from autobasedoc import ar
     from autobasedoc import ap
 
-    fpath = os.path.join(ar.__font_dir__, 'c063002t.ttf')
-
     ar.setTtfFonts(
-        'CorpoS',
+        'Calibri',
         os.path.realpath(ar.__font_dir__),
-        normal=('CorpoS-Ligh', 'calibri.ttf'),
-        bold=('CorpoS-LighBd', 'calibrib.ttf'),
-        italic=('CorpoS-LighIt', 'calibrii.ttf'),
-        bold_italic=('CorpoS-LighBI', 'calibriz.ttf'))
-
-    fpath = os.path.join(ar.__font_dir__, 'calibri.ttf')
-    font = ap.ft2font.FT2Font(fpath)
-    ap.fontprop = ap.ttfFontProperty(font)
-
-    fontprop = ap.fm.FontProperties(
-        family='sans-serif',
-        fname=ap.fontprop.fname,
-        size=None,
-        stretch=ap.fontprop.stretch,
-        style=ap.fontprop.style,
-        variant=ap.fontprop.variant,
-        weight=ap.fontprop.weight)
-
-    fontsize = 10
+        normal=('Calibri', 'calibri.ttf'),
+        bold=('CalibriBd', 'calibrib.ttf'),
+        italic=('CalibriIt', 'calibrii.ttf'),
+        bold_italic=('CalibriBdIt', 'calibriz.ttf'))
 
     plotColorDict = dict(
         royalblue='#4169E1',
@@ -46,6 +36,20 @@
 
     ap.plt.rc('axes', prop_cycle=(cycler('color', plotColors)))
 
+    fpath = os.path.join(ar.__font_dir__, 'calibri.ttf')
+    font = ap.ft2font.FT2Font(fpath)
+    ap.fontprop = ap.ttfFontProperty(font)
+
+    fontprop = ap.fm.FontProperties(
+        family='sans-serif',
+        fname=ap.fontprop.fname,
+        size=None,
+        stretch=ap.fontprop.stretch,
+        style=ap.fontprop.style,
+        variant=ap.fontprop.variant,
+        weight=ap.fontprop.weight)
+
+    fontsize = 10
     ap.matplotlib.rcParams.update({
         'font.size': fontsize,
         'font.family': 'sans-serif'
