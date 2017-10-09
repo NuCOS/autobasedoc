@@ -62,7 +62,7 @@ def autoPdfImage(func):
             y=[1,6,8,3,9,3,4,2]
             ax.plot(x,y,label="legendlabel")
             nrow,ncol=1,1
-            handels,labels= ax.get_legend_handles_labels()
+            handles, labels = ax.get_legend_handles_labels()
             
             leg_fig = ap.plt.figure(figsize=(canvaswidth, 0.2*nrow))
             
@@ -136,7 +136,7 @@ def autoPdfImg(func):
             y=[1,6,8,3,9,3,4,2]
             ax.plot(x,y,label="legendlabel")
             nrow,ncol=1,1
-            handels,labels= ax.get_legend_handles_labels()
+            handles, labels = ax.get_legend_handles_labels()
             
             leg_fig = ap.plt.figure(figsize=(canvaswidth, 0.2*nrow))
             
@@ -154,7 +154,6 @@ def autoPdfImg(func):
             
             return fig
     
-    TODO: add example in tests
     """
 
     @wraps(func)
