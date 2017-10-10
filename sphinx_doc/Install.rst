@@ -12,7 +12,7 @@ If you want it simple, go to a console an type:
 
 .. code-block:: python
 
-    pip install nucosCR
+    pip install autobasedoc
 
 With virtualenv
 ---------------
@@ -41,7 +41,7 @@ I prefer miniconda but the package does not exist for conda, yet:
 Python Compatibility
 --------------------
 
-The module is compatible with Python 3.4/3.5/3.6 It should also work in any other Python Version but not yet tested.    
+The module is compatible with Python 3.4/3.5/3.6 It should also work in any other Python Version but not yet tested.
 
 Platforms
 ---------
