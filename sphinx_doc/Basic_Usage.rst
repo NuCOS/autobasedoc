@@ -23,18 +23,17 @@ A usual working example for creating just a simple (empty) pdf file with a title
 
 .. code-block:: python
 
-	import os
-	outname = os.path.join(os.path.dirname(__file__), "MinimalExample.pdf")
+    import os
+    outname = os.path.join(os.path.dirname(__file__), "MinimalExample.pdf")
     doc = ar.AutoDocTemplate(outname,onFirstPage=ar.drawLaterPage,onLaterPages=ar.drawLaterPage,onLaterSPages=ar.drawLaterPage,
                             leftMargin=0.5*ar.cm, rightMargin=0.5*ar.cm, topMargin=0.5*ar.cm, bottomMargin=0.5*ar.cm)
 
-	#  you always work with your styles object
-	styles = ar.Styles()
+    #  you always work with your styles object
+    styles = ar.Styles()
     styles.registerStyles()
 
-	#  the container for the contents, also commonly called the story (contains reportlab flowables)
-	content = []
-	
+    #  the container for the contents, also commonly called the story (contains reportlab flowables)
+    content = []
     #add title
     para = ar.Paragraph(u"Minimal Example Title", styles.title)
     content.append(para)
@@ -45,8 +44,8 @@ A usual working example for creating just a simple (empty) pdf file with a title
     content.append(ar.Paragraph(u"Table Of Contents", styles.h1))
     content.append(toc)
 
-	#  always call multi build at the end
-	doc.multiBuild(content)
+    #  always call multi build at the end
+    doc.multiBuild(content)
 	
 
 ttf-Fonts
@@ -56,15 +55,15 @@ To work with ttf-fonts and have the same font inside your matplotlib images and 
 
 .. code-block:: python
 
-	import os  #  if you haven't, yet.
-	# we assume you have a fonts path 
+    import os  #  if you haven't, yet.
+    # we assume you have a fonts path 
     # (if you haven't you can use the calibri font we added to the module) ar.__font_dir__
-	# the ap (autoplot) module provides helpful stuff for combining reportlab with matplotlib
+    # the ap (autoplot) module provides helpful stuff for combining reportlab with matplotlib
     from autobasedoc import ap
 
 	#  here should be your path to the fonts (you can also use system fonts)
 
-	ar.setTtfFonts(
+    ar.setTtfFonts(
         'Calibri',
         os.path.realpath(ar.__font_dir__),
         normal=('Calibri', 'calibri.ttf'),
@@ -99,7 +98,7 @@ You might then additionally wan't to use the same colors, that reportlab uses:
 
 .. code-block:: python
 
-	from cycler import cycler
+    from cycler import cycler
 
     plotColorDict = dict(
         royalblue='#4169E1',

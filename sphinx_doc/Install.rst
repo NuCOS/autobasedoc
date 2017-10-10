@@ -32,11 +32,11 @@ I prefer miniconda but the package does not exist for conda, yet:
 
 .. code-block:: python
 
-	conda create -n abd-env
+    conda create -n abd-env
 
-	source activate abd-env
+    source activate abd-env
 
-	pip install autobasedoc
+    pip install autobasedoc
 
 Python Compatibility
 --------------------
