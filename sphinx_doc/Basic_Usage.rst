@@ -46,7 +46,6 @@ A usual working example for creating just a simple (empty) pdf file with a title
 
     #  always call multi build at the end
     doc.multiBuild(content)
-	
 
 ttf-Fonts
 ---------
@@ -61,7 +60,7 @@ To work with ttf-fonts and have the same font inside your matplotlib images and 
     # the ap (autoplot) module provides helpful stuff for combining reportlab with matplotlib
     from autobasedoc import ap
 
-	#  here should be your path to the fonts (you can also use system fonts)
+    #  here should be your path to the fonts (you can also use system fonts)
 
     ar.setTtfFonts(
         'Calibri',
