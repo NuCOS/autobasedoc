@@ -15,13 +15,13 @@ from functools import wraps
 from cycler import cycler
 
 import matplotlib
-#from autobasedoc import is_python3
+
 from autobasedoc.pdfimage import PdfImage, PdfAsset, getScaledSvg
 
-#if is_python3:
-#    matplotlib.use('Qt5Agg')
-#else:
-#    matplotlib.use('Agg')
+try:
+    import _tkinter
+except ImportError:
+    matplotlib.use('Agg')
 
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
