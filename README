@@ -13,6 +13,10 @@ Large portions are based on Examples of code, that where posted on e.g. stackove
 
 The reading and contributing of code and documentation or examples is encouraged, please feel free to fork and request merges...
 
+## docs
+
+http://autobasedoc.readthedocs.io/
+
 ## tests
 
 under linux there is a genie.sh test runner.
