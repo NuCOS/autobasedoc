@@ -26,7 +26,7 @@ http://autobasedoc.readthedocs.io/
 
 ## Meta
 
-Your Name – [@eckjoh2](https://twitter.com/eckjoh2) – contact@nucos.de
+Twitter – [@eckjoh2](https://twitter.com/eckjoh2) – contact@nucos.de
 
 See ``LICENSE`` for more information.
 
