@@ -1,15 +1,14 @@
 .. autobasedoc documentation master file, created by
-   sphinx-quickstart on Wed Oct 19 11:56:02 2017.
+   sphinx-quickstart on Wed Nov 15 14:10:12 2017.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to the documentation of autobasedoc
-===========================================
-
-autobasedoc is first a Toolbox based on *reportlab* and the platypus workflow therein, secondly it utilizes matplotlib to enable your workflow to insert your figures as vectorgraphic. The project aim is to improve the usability of the low level API of reportlab. It implements up to now only our main needs: matplotlib figures and an optional legend flowable. 
+Welcome to autobasedoc's documentation!
+=======================================
 
 .. toctree::
    :maxdepth: 2
+   :caption: Contents:
 
 .. include:: Install.rst
 
@@ -17,11 +16,24 @@ autobasedoc is first a Toolbox based on *reportlab* and the platypus workflow th
 
 .. include:: Example.rst
 
-.. include:: Auto_Docu.rst
+.. automodule:: autobasedoc.autoplot
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-Index
-=====
+.. automodule:: autobasedoc.autorpt
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: autobasedoc.pdfimage
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Indices and tables
+==================
 
 * :ref:`genindex`
+* :ref:`modindex`
 * :ref:`search`
-
