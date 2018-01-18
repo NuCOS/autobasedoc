@@ -1164,7 +1164,8 @@ class AutoDocTemplate(BaseDocTemplate):
                 frame.drawBoundary(canv)
             #handle scaling to fit a PdfImage on self.frame
             if isinstance(f, Table):
-                f.setStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.black)])
+                pass  # controls default behaviour for Table typed flowables
+                #f.setStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.black)])
             elif isinstance(f, Spacer):
                 pass
                 """
