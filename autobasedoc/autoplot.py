@@ -16,12 +16,11 @@ from cycler import cycler
 
 import matplotlib
 
-from autobasedoc.pdfimage import PdfImage, PdfAsset, getScaledSvg
-
 try:
     import _tkinter
+    matplotlib.use('TkAgg', force=True)
 except ImportError:
-    matplotlib.use('Agg')
+    matplotlib.use('Agg', force=True)
 
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
@@ -32,6 +31,8 @@ import matplotlib.font_manager as fm
 from matplotlib.font_manager import findfont
 from matplotlib import ft2font
 from matplotlib.font_manager import createFontList, ttfFontProperty
+
+from autobasedoc.pdfimage import PdfImage, PdfAsset, getScaledSvg
 
 # add color names, missing in matplotlib
 missing_names = {
@@ -50,10 +51,10 @@ fontprop = None
 def autoPdfImage(func):
     """
     decorator for the autoplot module
-    
+
     returns two PdfImage objects if wrapped plt-function obeys the principle
     demonstated in following minimal example::
-        
+
         @autoPdfImage
         def my_plot(canvaswidth=5): #[inch]
             fig, ax = ap.plt.subplots(figsize=(canvaswidth,canvaswidth))
@@ -63,9 +64,9 @@ def autoPdfImage(func):
             ax.plot(x,y,label="legendlabel")
             nrow,ncol=1,1
             handles, labels = ax.get_legend_handles_labels()
-            
+
             leg_fig = ap.plt.figure(figsize=(canvaswidth, 0.2*nrow))
-            
+
             leg = leg_fig.legend(handles, labels, #labels = tuple(bar_names)
                    ncol=ncol, mode=None,
                    borderaxespad=0.,
@@ -77,9 +78,9 @@ def autoPdfImage(func):
                    prop=fontprop
                    #fancybox=True,
                    )
-            
+
             return fig,leg_fig,leg
-    
+
     TODO: add example in tests
     """
 
@@ -87,7 +88,7 @@ def autoPdfImage(func):
     def funcwrapper(*args, **kwargs):
         """
         minimal example::
-            
+
             def my_decorator(f):
                 @wraps(f)
                 def wrapper(*args, **kwds):
@@ -124,10 +125,10 @@ def autoPdfImage(func):
 def autoPdfImg(func):
     """
     decorator for the autoplot module
-    
+
     returns one PdfImage objects if wrapped plt-function obeys the principle
     demonstated in following minimal example::
-        
+
         @autoPdfImg
         def my_plot(canvaswidth=5): #[inch]
             fig, ax = ap.plt.subplots(figsize=(canvaswidth,canvaswidth))
@@ -137,9 +138,9 @@ def autoPdfImg(func):
             ax.plot(x,y,label="legendlabel")
             nrow,ncol=1,1
             handles, labels = ax.get_legend_handles_labels()
-            
+
             leg_fig = ap.plt.figure(figsize=(canvaswidth, 0.2*nrow))
-            
+
             ax.legend(handles, labels, #labels = tuple(bar_names)
                    ncol=ncol, mode=None,
                    borderaxespad=0.,
@@ -151,16 +152,16 @@ def autoPdfImg(func):
                    prop=fontprop
                    #fancybox=True,
                    )
-            
+
             return fig
-    
+
     """
 
     @wraps(func)
     def funcwrapper(*args, **kwargs):
         """
         minimal example::
-            
+
             def my_decorator(f):
                 @wraps(f)
                 def wrapper(*args, **kwds):
