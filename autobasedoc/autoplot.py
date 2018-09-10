@@ -17,10 +17,9 @@ from cycler import cycler
 import matplotlib
 
 try:
-    import _tkinter
-    matplotlib.use('TkAgg', force=True)
-except ImportError:
     matplotlib.use('Agg', force=True)
+except:
+    print("check your matplotlib aggregator settings")
 
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
