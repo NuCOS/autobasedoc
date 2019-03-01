@@ -18,11 +18,10 @@ importpath = os.path.realpath(os.path.join(__root__, folder))
 #print(importpath)
 sys.path.append(importpath)
 
-from autobasedoc import ar
-from autobasedoc import ap
-from autobasedoc import _baseFontNames
-
+import autobasedoc.autorpt as ar
+import autobasedoc.autoplot as ap
 from autobasedoc.autorpt import addPlugin
+from autobasedoc import _baseFontNames
 
 fpath = os.path.join(ar.__font_dir__, 'calibri.ttf')
 font = ap.ft2font.FT2Font(fpath)
@@ -289,14 +288,14 @@ class Test_AutoBaseDoc(unittest.TestCase):
             sty = self.styles.normal
         para = ar.Paragraph(para, sty)
         self.contents.append(para)
-        
+
     def addFigure(self):
         """
         # add SIMPLE figure
         """
 
         img = self.simpleFigure()
-        
+
         self.contents.append(img)
 
     #@unittest.skip("add figure")
@@ -329,7 +328,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         x=[1,2,3,4,5,6,7,8]
         y=[1,6,8,3,9,3,4,2]
         ax.plot(x,y,label="legendlabel")
-        
+
         ax.legend(mode=None,
                borderaxespad=0.,
                loc='center',        # the location of the legend handles
@@ -339,7 +338,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
                prop=fontprop,
                fancybox=True,
                )
-        
+
         return fig
 
     @ap.autoPdfImage

@@ -18,11 +18,10 @@ importpath = os.path.realpath(os.path.join(__root__, folder))
 #print(importpath)
 sys.path.append(importpath)
 
-from autobasedoc import ar
-from autobasedoc import ap
-from autobasedoc import _baseFontNames
-
+import autobasedoc.autorpt as ar
+import autobasedoc.autoplot as ap
 from autobasedoc.autorpt import addPlugin
+from autobasedoc import _baseFontNames
 
 fpath = os.path.join(ar.__font_dir__, 'calibri.ttf')
 font = ap.ft2font.FT2Font(fpath)
@@ -276,7 +275,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
                 self.addParagraph(para=sub_ch_para)
 
     #@unittest.skip("add title")
-    def addTitle(self, 
+    def addTitle(self,
                  para=u"Minimal Example Title",
                  outTemplate='LaterL'):
         """
