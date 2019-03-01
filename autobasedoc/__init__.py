@@ -14,6 +14,3 @@ _baseFontNames = dict(normal='Helvetica',
                       bold='Helvetica-Bold',
                       italic='Helvetica-Oblique',
                       bold_italic='Helvetica-BoldOblique')
-
-import autobasedoc.autorpt as ar
-import autobasedoc.autoplot as ap

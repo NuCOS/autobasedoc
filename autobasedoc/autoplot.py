@@ -20,6 +20,7 @@ try:
     matplotlib.use('Agg', force=True)
 except:
     print("check your matplotlib aggregator settings")
+    print("matplotlib version:", matplotlib.__version__)
 
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
@@ -105,7 +106,7 @@ def autoPdfImage(func):
 
         leg_fig.savefig(
             imgleg,
-            additional_artists=(leg.get_window_extent(), ),
+            #additional_artists=(leg.get_window_extent(), ),
             bbox_extra_artists=(leg.legendPatch, ),
             bbox_inches='tight',
             format='PDF',
