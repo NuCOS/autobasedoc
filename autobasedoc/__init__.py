@@ -14,3 +14,11 @@ _baseFontNames = dict(normal='Helvetica',
                       bold='Helvetica-Bold',
                       italic='Helvetica-Oblique',
                       bold_italic='Helvetica-BoldOblique')
+
+def base_fonts():
+    """
+    there should be one base font per document
+    this is how to obtain that dictionary
+    of the different font weights of that base font
+    """
+    return _baseFontNames
