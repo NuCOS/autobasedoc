@@ -45,8 +45,9 @@ from reportlab.pdfbase.pdfdoc import PDFInfo
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-from autobasedoc import _baseFontNames
+from autobasedoc import base_fonts
 
+_baseFontNames = base_fonts()
 _basePath = os.path.realpath(os.path.dirname(__file__))
 
 sys.path.append(_basePath)
@@ -82,18 +83,18 @@ color_dict.update({
 def registerFont(faceName, afm, pfb):
     """
     Helvetica BUT AS AFM
-    
+
     The below section is NOT equal to::
-    
+
         _baseFontName  ='Helvetica'
         _baseFontNameB ='Helvetica-Bold'
         _baseFontNameI ='Helvetica-Oblique'
         _baseFontNameBI='Helvetica-BoldOblique'
-    
+
     we will mapp afm files from matplotlib with pfb files from reportlab
-    
+
     this will give embedded Type1 Face Fonts
-    
+
     """
     afm = os.path.join(__font_dir__, "".join(afm, ".afm"))
     pfb = os.path.join(__font_dir__, "".join(pfb, ".pfb"))
@@ -131,10 +132,10 @@ def setTtfFonts(familyName,
     addMapping(familyName, 0, 1, italicName)
     addMapping(familyName, 1, 1, bold_italicName)
 
-    _baseFontNames.update({"normal": pdfmetrics.getFont(normalName).fontName})
-    _baseFontNames.update({"bold": pdfmetrics.getFont(boldName).fontName})
-    _baseFontNames.update({"italic": pdfmetrics.getFont(italicName).fontName})
-    _baseFontNames.update({
+    base_fonts().update({"normal": pdfmetrics.getFont(normalName).fontName})
+    base_fonts().update({"bold": pdfmetrics.getFont(boldName).fontName})
+    base_fonts().update({"italic": pdfmetrics.getFont(italicName).fontName})
+    base_fonts().update({
         "bold_italic": pdfmetrics.getFont(bold_italicName).fontName
     })
 
@@ -142,7 +143,7 @@ def setTtfFonts(familyName,
 def setFonts(typ):
     """
     Sets fonts for standard font-types
-    
+
     :param typ: one of sans-serif-afm, serif (sans-serif is default on init)
     :type typ: str
     """
@@ -158,16 +159,16 @@ def setFonts(typ):
             faceName = afm
             registerFont(faceName, afm, pfb)
 
-        _baseFontNames.update({
+        base_fonts().update({
             "normal": pdfmetrics.getFont('Helvetica').fontName
         })
-        _baseFontNames.update({
+        base_fonts().update({
             "bold": pdfmetrics.getFont('Helvetica-Bold').fontName
         })
-        _baseFontNames.update({
+        base_fonts().update({
             "italic": pdfmetrics.getFont('Helvetica-Oblique').fontName
         })
-        _baseFontNames.update({
+        base_fonts().update({
             "bold_italic": pdfmetrics.getFont('Helvetica-BoldOblique').fontName
         })
 
@@ -190,31 +191,31 @@ def reprFrame(frame):
 def getTableStyle(tSty=None, tSpaceAfter=0, tSpaceBefore=0):
     """
     :param tSty: TableStyle(tSty) default is None
-    :param tSpaceBefore: space before table, default: 0 
+    :param tSpaceBefore: space before table, default: 0
     :param tSpaceAfter: space after table, default: 0
 
     :returns: TableStyle object
-    
+
     use the add method of that object to add style commands e.g.:
     to add a background in the first row::
-        
+
         tableStyle.add(("BACKGROUND",(0,0),(2,0),ar.colors.green))
         tableStyle.add(("BACKGROUND",(2,0),(4,0),ar.colors.lavender))
-    
+
     to change text color on the first two columns::
-        
+
         tableStyle.add(("TEXTCOLOR",(0,0),(1,-1),ar.colors.red))
-    
+
     to change alignment of all cells to 'right'::
-        
+
         tableStyle.add(("ALIGN",(0,0),(-1,-1),"RIGHT"))
-    
+
     to add a grid for the whole table::
-        
+
         tableStyle.add(("GRID",(0,0),(-1,-1),0.5,ar.colors.black))
-    
+
     some further examples of command entries::
-        
+
         ("ALIGN",(0,0),(1,-1),"LEFT"),
         ("ALIGN",(1,0),(2,-1),"RIGHT"),
         ("ALIGN",(-2,0),(-1,-1),"RIGHT"),
@@ -258,7 +259,7 @@ def addPlugin(canv, doc, frame="First"):
 
     :param canv: canvas object
     :param doc: AutoDocTemplate instance
-    :param frame: template name of the Frame 
+    :param frame: template name of the Frame
 
     This function suggests that you have stored page info Items
     in doc.pageInfos.
@@ -443,7 +444,7 @@ def drawFirstPage(canv, doc):
     frame, pagesize = doc.getFrame('FirstP', orientation="Portrait")
 
     canv.setPageSize(pagesize)
-    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+    canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width -
                    (frame._leftPadding + frame._rightPadding)) / 2
@@ -466,7 +467,7 @@ def drawFirstLPage(canv, doc):
     frame, pagesize = doc.getFrame('FirstL', orientation="Landscape")
 
     canv.setPageSize(pagesize)
-    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+    canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width -
                    (frame._leftPadding + frame._rightPadding)) / 2
@@ -523,7 +524,7 @@ def drawFirstLSPage(canv, doc):
     pagesize = frame._width, frame._height
 
     canv.setPageSize(pagesize)
-    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+    canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width -
                    (frame._leftPadding + frame._rightPadding)) / 2
@@ -547,7 +548,7 @@ def drawLaterPage(canv, doc):
     frame, pagesize = doc.getFrame('LaterP', orientation="Portrait")
 
     canv.setPageSize(pagesize)
-    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+    canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width -
                    (frame._leftPadding + frame._rightPadding)) / 2
@@ -573,7 +574,7 @@ def drawLaterLPage(canv, doc):
     frame, pagesize = doc.getFrame('LaterL', orientation="Landscape")
 
     canv.setPageSize(pagesize)
-    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+    canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width -
                    (frame._leftPadding + frame._rightPadding)) / 2
@@ -601,7 +602,7 @@ def drawLaterLandscapeMultiPage(canv, doc):
     #print(pagesize[0],pagesize[1])
 
     canv.setPageSize(pagesize)
-    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+    canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width -
                    (frame._leftPadding + frame._rightPadding)) / 2
@@ -629,7 +630,7 @@ def drawLaterLandscapeSinglePage(canv, doc):
     #print(pagesize[0],pagesize[1])
 
     canv.setPageSize(pagesize)
-    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+    canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width -
                    (frame._leftPadding + frame._rightPadding)) / 2
@@ -660,13 +661,13 @@ class PageInfo(object):
     """
 
     def __init__(self, typ, pos, text, image, line, frame, addPageNumber,
-                 rightMargin, shift):
-        self.frame = frame
+                 rightMargin=None, shift=None):
         self.typ = typ
         self.pos = pos
         self.text = text
         self.image = image
         self.line = line
+        self.frame = frame
         self.addPageNumber = addPageNumber
         if rightMargin is not None:
             setattr(self, "rightMargin", rightMargin)
@@ -798,7 +799,7 @@ class AutoDocTemplate(BaseDocTemplate):
 
         """
         f = attrgetter("__name__")
-
+        ### on first page
         if f(onFirstPage) == f(drawFirstLPage):
             templates.append(
                 PageTemplate(
@@ -809,7 +810,7 @@ class AutoDocTemplate(BaseDocTemplate):
         elif f(onFirstPage) == f(drawFirstLSPage):
             templates.append(
                 self.getMultiColumnTemplate(
-                    tId='LaterL', onPager=onFirstPage))
+                    tId='FirstML', onPager=onFirstPage))
         elif f(onFirstPage) == f(drawFirstPage):
             templates.append(
                 PageTemplate(
@@ -817,6 +818,7 @@ class AutoDocTemplate(BaseDocTemplate):
                     frames=frameP,
                     onPage=onFirstPage,
                     pagesize=self.pagesize))
+        ### on later page
         if f(onLaterPages) == f(drawLaterLPage):
             templates.append(
                 PageTemplate(
@@ -828,6 +830,10 @@ class AutoDocTemplate(BaseDocTemplate):
             templates.append(
                 self.getMultiColumnTemplate(
                     tId='LaterML', onPager=onLaterPages))
+        elif f(onLaterPages) == f(drawLaterLandscapeSinglePage):
+            templates.append(
+                self.getMultiColumnTemplate(
+                    tId='LaterML', onPager=onLaterPages))
         elif f(onLaterPages) == f(drawLaterPage):
             templates.append(
                 PageTemplate(
@@ -835,6 +841,7 @@ class AutoDocTemplate(BaseDocTemplate):
                     frames=frameP,
                     onPage=onLaterPages,
                     pagesize=self.pagesize))
+        ### on later special page
         if f(onLaterSPages) == f(drawLaterLPage):
             templates.append(
                 PageTemplate(
@@ -845,7 +852,7 @@ class AutoDocTemplate(BaseDocTemplate):
         elif f(onLaterSPages) == f(drawLaterLandscapeMultiPage):
             templates.append(
                 self.getMultiColumnTemplate(
-                    tId='LaterL', onPager=onLaterSPages))
+                    tId='LaterML', onPager=onLaterSPages))
         elif f(onLaterSPages) == f(drawLaterLandscapeSinglePage):
             templates.append(
                 self.getMultiColumnTemplate(
@@ -1013,27 +1020,27 @@ class AutoDocTemplate(BaseDocTemplate):
                                fId="Portrait"):
         """
         create a TwoColumn Frame
-        
+
         This is customized for landscape format pages.
         if you want portrait, set pagesizeL to False
-        
+
         Frame vals::
-        
-            x1, 
-            y1, 
+
+            x1,
+            y1,
             width,
-            height, 
-            leftPadding=6, 
-            bottomPadding=6, 
-            rightPadding=6, 
-            topPadding=6, 
-            id=None, 
-            showBoundary=0, 
+            height,
+            leftPadding=6,
+            bottomPadding=6,
+            rightPadding=6,
+            topPadding=6,
+            id=None,
+            showBoundary=0,
             overlapAttachedSpace=None,
             _debug=None
-        
+
         Template Style for Two Frames::
-            
+
                     width          (x2,y2)
             +-----------------------------+-----------------------------+
             | l  top padding            r | h                           |
@@ -1049,7 +1056,7 @@ class AutoDocTemplate(BaseDocTemplate):
             |    bottom padding           |                             |
             +-----------------------------+-----------------------------+
             (x1,y1) <-- lower left corner
-        
+
         """
         if pagesizeL:
             width, height = landscape(self.pagesize)
@@ -1303,12 +1310,26 @@ class AutoDocTemplate(BaseDocTemplate):
         with appropriate data.
         """
 
-        if flowable.__class__.__name__ == "Bookmark":
+        cln = None
+
+        try:
+            cln = flowable.cln()
+
+        except:
+            pass
+
+        if cln == "Header":
+            pass
+
+        if cln == "Footer":
+            pass
+
+        if cln == "Bookmark":
             #print("Bookmark",flowable.title,"created at level:",flowable.level)
 
             #This seems to be not necessary
-            E = [flowable.level, flowable.title, self.page, flowable.key]
-            self.notify('TOCEntry', tuple(E))
+            entity_info = flowable.level, flowable.title, self.page, flowable.key
+            self.notify('TOCEntry', entity_info)
 
             self.currSpaceToBottom = self.frame._y + self.frame._y1p  # <-- not necessary
 
@@ -1337,6 +1358,9 @@ class AutoDocTemplate(BaseDocTemplate):
 
 
 class BottomSpacer(Spacer):
+    """
+    a spacer that fills the current doc unto the bottom
+    """
     def wrap(self, availWidth, availHeight):
         height = availHeight - self._doc.bottomTableHeight
 
@@ -1445,9 +1469,9 @@ class Styles(object):
         self.addStyle(
             ParagraphStyle(
                 name='Normal',
-                fontName=_baseFontNames["normal"],
+                fontName=base_fonts()["normal"],
                 fontSize=10,
-                bulletFontName=_baseFontNames["normal"],
+                bulletFontName=base_fonts()["normal"],
                 leading=12))
         self.addStyle(
             ParagraphStyle(
@@ -1465,14 +1489,14 @@ class Styles(object):
             ParagraphStyle(
                 name='Italic',
                 parent=self.stylesheet['BodyText'],
-                fontName=_baseFontNames["italic"]),
+                fontName=base_fonts()["italic"]),
             alias='italic')
 
         self.addStyle(
             ParagraphStyle(
                 name='Bold',
                 parent=self.stylesheet['BodyText'],
-                fontName=_baseFontNames["bold"]),
+                fontName=base_fonts()["bold"]),
             alias='bold')
 
         self.addStyle(
@@ -1494,7 +1518,7 @@ class Styles(object):
             ParagraphStyle(
                 name='Title',
                 parent=self.stylesheet['Normal'],
-                fontName=_baseFontNames["bold"],
+                fontName=base_fonts()["bold"],
                 fontSize=18,
                 leading=22,
                 alignment=TA_CENTER,
@@ -1505,7 +1529,7 @@ class Styles(object):
             ParagraphStyle(
                 name='Heading1',
                 parent=self.stylesheet['Normal'],
-                fontName=_baseFontNames["bold"],
+                fontName=base_fonts()["bold"],
                 fontSize=18,
                 leading=22,
                 spaceAfter=6),
@@ -1515,7 +1539,7 @@ class Styles(object):
             ParagraphStyle(
                 name='Heading2',
                 parent=self.stylesheet['Normal'],
-                fontName=_baseFontNames["bold"],
+                fontName=base_fonts()["bold"],
                 fontSize=14,
                 leading=18,
                 spaceBefore=12,
@@ -1526,7 +1550,7 @@ class Styles(object):
             ParagraphStyle(
                 name='Heading3',
                 parent=self.stylesheet['Normal'],
-                fontName=_baseFontNames["bold"],
+                fontName=base_fonts()["bold"],
                 fontSize=12,
                 leading=14,
                 spaceBefore=12,
@@ -1537,7 +1561,7 @@ class Styles(object):
             ParagraphStyle(
                 name='Heading4',
                 parent=self.stylesheet['Normal'],
-                fontName=_baseFontNames["bold"],
+                fontName=base_fonts()["bold"],
                 fontSize=10,
                 leading=12,
                 spaceBefore=10,
@@ -1548,7 +1572,7 @@ class Styles(object):
             ParagraphStyle(
                 name='Heading5',
                 parent=self.stylesheet['Normal'],
-                fontName=_baseFontNames["bold"],
+                fontName=base_fonts()["bold"],
                 fontSize=9,
                 leading=10.8,
                 spaceBefore=8,
@@ -1559,7 +1583,7 @@ class Styles(object):
             ParagraphStyle(
                 name='Heading6',
                 parent=self.stylesheet['Normal'],
-                fontName=_baseFontNames["bold"],
+                fontName=base_fonts()["bold"],
                 fontSize=7,
                 leading=8.4,
                 spaceBefore=6,
@@ -1570,7 +1594,7 @@ class Styles(object):
             ParagraphStyle(
                 name='Heading6',
                 parent=self.stylesheet['Normal'],
-                fontName=_baseFontNames["bold"],
+                fontName=base_fonts()["bold"],
                 alignment=TA_CENTER,
                 fontSize=12,
                 leading=8.4,
@@ -1594,7 +1618,7 @@ class Styles(object):
                 leftIndent=36,
                 bulletIndent=0,
                 spaceBefore=6,
-                bulletFontName=_baseFontNames["bold_italic"]),
+                bulletFontName=base_fonts()["bold_italic"]),
             alias='df')
 
         self.addStyle(
@@ -1731,6 +1755,19 @@ def doTabelOfContents():
     ]
     return toc
 
+class Header(NullActionFlowable):
+    _ids = count(0)
+
+    @classmethod
+    def cln(cls):
+        return cls.__name__
+
+class Footer(NullActionFlowable):
+    _ids = count(0)
+
+    @classmethod
+    def cln(cls):
+        return cls.__name__
 
 class Bookmark(NullActionFlowable):
     """
@@ -1741,6 +1778,10 @@ class Bookmark(NullActionFlowable):
 
     """
     _ids = count(0)
+
+    @classmethod
+    def cln(cls):
+        return cls.__name__
 
     def __init__(self, title, level=0):
         NullActionFlowable.__init__(self)
@@ -1777,8 +1818,8 @@ def getBookmarkLast(contents):
 
 
 def getBaseFont(fonttype):
-    if fonttype in _baseFontNames:
-        return _baseFontNames[fonttype]
+    if fonttype in base_fonts():
+        return base_fonts()[fonttype]
     else:
         return None
 

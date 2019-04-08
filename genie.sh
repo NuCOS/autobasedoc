@@ -11,6 +11,7 @@ fi
 ###################################
 echo "----------------------------------------------------"
 {
+conda update -n base -c defaults conda
 conda create --name $PACKAGE'3_6' python=3.6 -y
 source activate $PACKAGE'3_6'
 } || { 
@@ -44,7 +45,7 @@ echo "test done in:"
 python info.py
 sleep 3
 
-source deactivate
+conda deactivate
 echo "after deactivate"
 python info.py
 

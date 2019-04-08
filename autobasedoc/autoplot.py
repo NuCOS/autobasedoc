@@ -16,11 +16,11 @@ from cycler import cycler
 
 import matplotlib
 
-try:
-    matplotlib.use('Agg', force=True)
-except:
-    print("check your matplotlib aggregator settings")
-    print("matplotlib version:", matplotlib.__version__)
+# try:
+#     matplotlib.use('Agg', force=True)
+# except:
+#     print("check your matplotlib aggregator settings")
+#     print("matplotlib version:", matplotlib.__version__)
 
 from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle
