@@ -41,8 +41,9 @@ from reportlab.lib.styles import ParagraphStyle
 
 # Configure Fonts!
 from reportlab.lib.fonts import addMapping
-from reportlab.pdfbase.pdfdoc import PDFInfo
 from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.pdfmetrics import getFont
+from reportlab.pdfbase.pdfdoc import PDFInfo
 from reportlab.pdfbase.ttfonts import TTFont
 
 from autobasedoc import base_fonts
@@ -132,12 +133,10 @@ def setTtfFonts(familyName,
     addMapping(familyName, 0, 1, italicName)
     addMapping(familyName, 1, 1, bold_italicName)
 
-    base_fonts().update({"normal": pdfmetrics.getFont(normalName).fontName})
-    base_fonts().update({"bold": pdfmetrics.getFont(boldName).fontName})
-    base_fonts().update({"italic": pdfmetrics.getFont(italicName).fontName})
-    base_fonts().update({
-        "bold_italic": pdfmetrics.getFont(bold_italicName).fontName
-    })
+    base_fonts().update({"normal": getFont(normalName).fontName})
+    base_fonts().update({"bold": getFont(boldName).fontName})
+    base_fonts().update({"italic": getFont(italicName).fontName})
+    base_fonts().update({"bold_italic": getFont(bold_italicName).fontName})
 
 
 def setFonts(typ):
@@ -350,13 +349,13 @@ def addPlugin(canv, doc, frame="First"):
         ### here must be placed a positioning for the three locations
 
         if pitem.typ.startswith("header"):
-            if pitem.pos == "r":
+            if pitem.pos.startswith("r"):
                 x = doc.rightM
                 x -= pitem.image.drawWidth
                 y -= pitem.image.drawHeight
                 x, y = shift(pitem, x, y)
 
-            if pitem.pos == "l":
+            if pitem.pos.startswith("l"):
                 x = doc.leftM
                 #x-=pitem.image.drawWidth
                 y -= pitem.image.drawHeight
@@ -365,13 +364,13 @@ def addPlugin(canv, doc, frame="First"):
                 x, y = shift(pitem, x, y)
 
         elif pitem.typ.startswith("footer"):
-            if pitem.pos == "r":
+            if pitem.pos.startswith("r"):
                 x = doc.rightM
                 x -= pitem.image.drawWidth
                 y -= pitem.image.drawHeight
                 x, y = shift(pitem, x, y)
 
-            if pitem.pos == "l":
+            if pitem.pos.startswith("l"):
                 x = doc.leftM
                 #x-=pitem.image.drawWidth
                 y -= pitem.image.drawHeight
@@ -773,6 +772,7 @@ class AutoDocTemplate(BaseDocTemplate):
             bottomPadding=self.bottomMargin,
             showBoundary=self.showBoundary,
             id='Portrait')
+
         #Landscape Frame
         frameL = Frame(
             0,
@@ -1072,28 +1072,28 @@ class AutoDocTemplate(BaseDocTemplate):
         #construct a frame for each column
         for frame in range(frameCount):
             leftMargin = self.leftMargin + frame * frameWidth
-            column = Frame(
-                leftMargin,
-                self.bottomMargin,
-                width=frameWidth,
-                height=frameHeight,
-                leftPadding=0.,
-                bottomPadding=0.,
-                rightPadding=0.,
-                topPadding=0.,
-                id=fId,
-                showBoundary=0)
+            column = Frame(leftMargin,
+                           self.bottomMargin,
+                           width=frameWidth,
+                           height=frameHeight,
+                           leftPadding=0.,
+                           bottomPadding=0.,
+                           rightPadding=0.,
+                           topPadding=0.,
+                           id=fId,
+                           showBoundary=0)
             frames.append(column)
-        fFrame = Frame(
-            self.leftMargin,
-            self.bottomMargin,
-            width,
-            height,
-            id=fF,
-            showBoundary=0)
+        fFrame = Frame(self.leftMargin,
+                       self.bottomMargin,
+                       width,
+                       height,
+                       id=fF,
+                       showBoundary=0)
         frames.append(fFrame)
-        return PageTemplate(
-            id=tId, frames=frames, onPage=onPager, pagesize=(width, height))
+        return PageTemplate(id=tId,
+                            frames=frames,
+                            onPage=onPager,
+                            pagesize=(width, height))
 
     def handle_pageBegin(self):
         """
@@ -1107,8 +1107,10 @@ class AutoDocTemplate(BaseDocTemplate):
 
     def scaleImage(self, thisImage, scaleFactor=None):
         """
-        Function to allow user scaling of factor. A scaling greater than 0, lesser than 1 is
-        allowed. By default a scaling of 0.7071 is applied to thisImage
+        Function to allow user scaling of factor.
+        A scaling greater than 0, lesser than 1 is
+        allowed. By default a scaling of 0.7071 is
+        applied to thisImage
         """
         if scaleFactor is None:
             setattr(thisImage, "_userScaleFactor", 0.7071)
@@ -1142,7 +1144,6 @@ class AutoDocTemplate(BaseDocTemplate):
         #allow document a chance to look at, modify or ignore
         #the object(s) about to be processed
         self.filterFlowables(flowables)
-
         self.handle_breakBefore(flowables)
         self.handle_keepWithNext(flowables)
         f = flowables[0]
@@ -1189,7 +1190,6 @@ class AutoDocTemplate(BaseDocTemplate):
                 #print("height of image:",f.drawHeight)
                 #print("height of frame:",frame._aH)
                 xfactor = getattr(f, "_userScaleFactor", None)
-
                 factor = 1.
 
                 if not xfactor is None:
@@ -1290,7 +1290,6 @@ class AutoDocTemplate(BaseDocTemplate):
         the look (for example providing page numbering or section names).
         """
         self._calc()  #in case we changed margins sizes etc
-
         BaseDocTemplate.build(self, flowables)
         self.PageDecorated = True
 
@@ -1311,7 +1310,6 @@ class AutoDocTemplate(BaseDocTemplate):
         """
 
         cln = None
-
         try:
             cln = flowable.cln()
 
@@ -1351,7 +1349,8 @@ class AutoDocTemplate(BaseDocTemplate):
 
     def figcounter(self):
         """
-        a simple figure counter, this is a very dirty way to control the number of figures
+        a simple figure counter, this is a very dirty way
+        to control the number of figures
         """
         self.figCount += 1
         return str(self.figCount)
@@ -1461,7 +1460,6 @@ class Styles(object):
 
     provides a function to easily register more styles
     """
-
     def __init__(self):
 
         self.stylesheet = StyleSheet()
@@ -1752,7 +1750,7 @@ def doTabelOfContents():
             firstLineIndent=0,
             spaceBefore=0,
             leading=10),
-    ]
+        ]
     return toc
 
 class Header(NullActionFlowable):
@@ -1855,11 +1853,8 @@ def doHeading(title, sty, outlineText=None, bookmarkFullpage=False):
     else:
         h = Paragraph(an + title, sty)
 
-##    h=Paragraph(an+title,sty)
-
 # heading must stay with next paragraph or table
 ##    h.keepWithNext = True
-
     return (bm, h)
 
 
