@@ -18,13 +18,16 @@ from hashlib import sha1
 from operator import attrgetter
 from itertools import count
 from collections import OrderedDict
+import copy
+import random
+import string
 
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import inch, cm, mm  #,pica
 
 from reportlab.platypus import (Image, Paragraph, PageBreak, Table, TableStyle,
-                                Spacer, Flowable, KeepTogether, FrameBreak)
+                                Spacer, Flowable, KeepTogether, FrameBreak, PageBegin)
 
 from reportlab.platypus.doctemplate import (
     BaseDocTemplate, PageTemplate, NextPageTemplate, _doNothing, LayoutError,
@@ -33,7 +36,7 @@ from reportlab.platypus.doctemplate import (
 
 from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.platypus.frames import Frame
-from reportlab.platypus.flowables import SlowPageBreak, DDIndenter
+from reportlab.platypus.flowables import SlowPageBreak, DDIndenter, PageBreakIfNotEmpty
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.colors import Color
@@ -252,6 +255,274 @@ def getTableStyle(tSty=None, tSpaceAfter=0, tSpaceBefore=0):
     return tableStyle
 
 
+class StyledTable(object):
+    """
+    data object to store all data and styles of ONE table
+
+    This class is an independent representation for the metadata and parameters
+    of the results to be shown in ONE table::
+
+        +----------------------------------+
+        |            table                 |
+        |                                  |
+        +----------------------------------+
+
+
+    """
+
+    def __init__(self, gridded=False, leftTablePadding=0, hTableAlignment=None):
+        """
+        :param gridded: if True, the table style is gridded, default is False
+        :type gridded: bool
+        :param leftTablePadding: if a number > 0 is inserted, the table gets a left empty column to be like left-padded
+        :type leftTablePadding: int
+        """
+        self.hTableAlignment = hTableAlignment
+        self.tableData = list()
+        self.tableStyleCommands = list()
+        # for finalizing specific cell formats
+        self.tableExtraStyleCommands = list()
+        self.fontsize = 10
+        self.addTableStyleCommand(('FONT', (0, 0), (-1, -1),
+                                   _baseFontNames["normal"]))
+        if gridded:
+            self.addTableStyleCommand(("GRID", (0, 0), (-1, -1), 0.5,
+                                       colors.black))
+        if leftTablePadding:
+            self.offsetCol = 1
+            self.leftTablePadding = leftTablePadding
+        else:
+            self.offsetCol = 0
+            self.leftTablePadding = 0
+        self.headerRow = 0
+        self.title = ''.join(random.choice(
+            string.ascii_uppercase + string.digits) for _ in range(5))
+        # BUG: VALIGN does not work with different font sizes !!!
+        self.addTableStyleCommand(
+            ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'))
+        self.addTableStyleCommand(
+            ('FONTSIZE', (0, 0), (-1, -1), self.fontsize))
+
+    def setFontSizeColor(self, size, color, row, col):
+        """
+        FONTSIZE (or SIZE)      - takes fontsize in points; leading may get out of sync.
+        TEXTCOLOR
+        """
+        cmd_size = ("FONTSIZE", (self.offsetCol + col, row),
+                    (self.offsetCol + col, row), size)
+        cmd_color = ("TEXTCOLOR", (self.offsetCol + col, row),
+                     (self.offsetCol + col, row), color)
+
+        # adjust the paddings in the cells with larger fonts
+        cmd_padding_bottom = ('BOTTOMPADDING', (self.offsetCol + col, row),
+                              (self.offsetCol + col, row), size - self.fontsize + 3)
+        cmd_padding_top = ('TOPPADDING', (self.offsetCol + col, row),
+                           (self.offsetCol + col, row), 0)
+        cmd_padding_right = ('RIGHTPADDING', (self.offsetCol + col, row),
+                             (self.offsetCol + col, row), 0.2 * cm)
+        self.addTableExtraStyleCommand(cmd_size)
+        self.addTableExtraStyleCommand(cmd_color)
+        self.addTableExtraStyleCommand(cmd_padding_bottom)
+        self.addTableExtraStyleCommand(cmd_padding_top)
+        self.addTableExtraStyleCommand(cmd_padding_right)
+
+    def addTableExtraStyleCommand(self, cmd):
+        if isinstance(cmd, list):
+            for cm in cmd:
+                self.tableExtraStyleCommands.append(cm)
+
+        if isinstance(cmd, tuple):
+            self.tableExtraStyleCommands.append(cmd)
+
+    def addTableStyleCommand(self, cmd, extra=False):
+        """
+        Adds style command to table.
+
+        line commands are like:
+        op, start, stop, weight, colour, cap, dashes, join, linecount, linespacing
+
+        op is one of:
+        GRID, BOX,OUTLINE, INNERGRID, LINEBELOW, LINEABOVE, LINEBEFORE, LINEAFTER
+
+        cell commands are like ...
+
+        :param cmd: one table command data for styles
+        :type cmd: tuple
+        """
+        if isinstance(cmd, list):
+            for cm in cmd:
+                self.tableStyleCommands.append(cm)
+        if isinstance(cmd, tuple):
+            self.tableStyleCommands.append(cmd)
+
+    def setTableData(self, data):
+        """
+        Overwrites the table data with fresh new data.
+        If leftTablePadding is activated an empty column is inserted here automatically.
+
+        :param data: the new data
+        :type data: list of tuples
+
+        """
+        self.tableData = data
+        if self.leftTablePadding > 0:
+            for t in self.tableData:
+                t.insert(0, "")
+
+    def addTableLine(self, line):
+        """
+        Adds a table line to data.
+        If leftTablePadding is activated an empty column is inserted here automatically.
+
+        :param line: the data of one table line
+        :type line: tuple, list
+        """
+        if isinstance(line, tuple):
+            line = list(line)
+        if self.leftTablePadding > 0:
+            line.insert(0, "")
+        self.tableData.append(line)
+
+    def addHorizontalLines(self, color="blue", offsetCol=None, exclude=[]):
+        """
+        Adds horizontal lines only. Apply after inserting all data and after inserting the header line.
+        If no header line exists also a top line is included.
+
+        :param color: the color of the horizontal line
+        :type color: str
+        """
+        if offsetCol is None:
+            offsetCol = self.offsetCol
+        color = getattr(colors, color)
+        for ri in range(self.headerRow, self.linesCount()):
+            if ri in exclude:
+                continue
+            self.addTableStyleCommand(
+                ("LINEBELOW", (offsetCol, ri), (-1, ri), 0.4, color))
+        if self.headerRow == 0:
+            self.addTableStyleCommand(
+                ("LINEABOVE", (offsetCol, 0), (-1, 0), 0.4, color))
+
+    def addDoubleLine(self, color="blue", line=0):
+        """
+        Adds a double line below the line specified
+
+        :param line: the number of the line below which the double line is inserted
+        :type col: int
+        :param color: the color of the vertical line
+        :type color: str
+        """
+        cmd = ("LINEBELOW", (self.offsetCol, line), (-1, line), 0.4,
+               color, 1, None, None, 2, 0.6)
+        self.tableStyleCommands.append(cmd)
+
+    def addVerticalLine(self, col, color="blue"):
+        """
+        Adds vertical lines only. Apply after inserting all data.
+
+        :param col: the number of the column after which the vertical line is inserted
+        :type col: int
+        :param color: the color of the horizontal line
+        :type color: str
+        """
+        color = getattr(colors, color)
+        self.addTableStyleCommand(
+            ("LINEAFTER", (col + self.offsetCol, 0), (col + self.offsetCol, -1), 0.4, color))
+
+    def addTableHeader(self, line, fonttype="bold", color="blue"):
+        """
+        Prepends a table line to data and insert the correct styles, like double underline and bold.
+
+        :param line: the data for the header line
+        :type line: tuple, list
+        :param fonttype: one of normal, bold, italic
+        :type fonttype: str
+        :param color: the color of the horizontal line
+        :type color: str
+        """
+        self.headerRow = 1
+        color = getattr(colors, color)
+        line = copy.copy(line)
+        if isinstance(line, tuple):
+            line = list(line)
+        if self.leftTablePadding > 0:
+            line.insert(0, "")
+        self.tableData.insert(0, line)
+        cmd = ('FONT', (self.offsetCol, 0),
+               (-1, 0), _baseFontNames[fonttype])
+        self.tableStyleCommands.append(cmd)
+        self.addDoubleLine()
+
+    def linesCount(self):
+        """
+        Returns the number of rows/lines including header line.
+
+        """
+        return len(self.tableData)
+
+    def colsCount(self):
+        """
+        Returns the number of columns.
+
+        """
+        return len(self.tableData[0])
+
+    def handleStyleCommands(self):
+        """
+        Creates real tableStyle from tableStyleCommands.
+
+        """
+        tableStyle = getTableStyle()
+        for cmd in self.tableStyleCommands:
+            if not len(cmd) == 0:
+                tableStyle.add(*cmd)
+        for cmd in self.tableExtraStyleCommands:
+            if not len(cmd) == 0:
+                tableStyle.add(*cmd)
+        return tableStyle
+
+    @property
+    def as_flowable(self):
+        """
+        Shortage name
+        """
+        if not self.tableData:
+            self.tableData = [[""]]
+        return self.layoutTable(hTableAlignment=None, colWidths=None)
+
+    def layoutTable(self, hTableAlignment=TA_LEFT, colWidths=None):
+        """
+        Returns a table flowable with automatically estimated column width.
+
+        :param styledTable: a styled table
+        :type styledTable: StyledTable
+        :param hTableAlignment: the table alignment on the frame
+        :type hTableAlignment: int
+        :param colWidths: the columns width in cm
+        :type colWidths: list
+        :param spaceBefore: the space above the table in cm
+        :type spaceBefore: float
+        :param spaceAfter: the space below the table in cm
+        :type spaceAfter: float
+
+        :returns: a table flowable element
+        """
+        self.addTableStyleCommand(
+            ('LEFTPADDING', (0, 0), (-1, -1), 0.1 * cm))
+        self.addTableStyleCommand(
+            ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'))
+        if colWidths:
+            colWidths = [x * cm for x in colWidths]
+        table = Table(self.tableData, colWidths=colWidths,
+                         spaceBefore=0, spaceAfter=0)
+        table.setStyle(self.handleStyleCommands())
+        if hTableAlignment:
+            table.hAlign = hTableAlignment
+        elif self.hTableAlignment:
+            table.hAlign = self.hTableAlignment
+        return table
+
+
 def addPlugin(canv, doc, frame="First"):
     """
     holds all functions to handle placing all elements on the canvas...
@@ -434,7 +705,7 @@ def addPlugin(canv, doc, frame="First"):
         #print("going through the pageInfo items:",lkeys)
 
 
-def drawFirstPage(canv, doc):
+def drawFirstPortrait(canv, doc):
     """
     This is the Title Page Template (Portrait Oriented)
     """
@@ -457,33 +728,7 @@ def drawFirstPage(canv, doc):
     canv.restoreState()
 
 
-def drawFirstLPage(canv, doc):
-    """
-    This is the Title Page Template (Landscape Oriented)
-    """
-    canv.saveState()
-    #set Page Size
-    frame, pagesize = doc.getFrame('FirstL', orientation="Landscape")
-
-    canv.setPageSize(pagesize)
-    canv.setFont(base_fonts()["normal"], doc.fontSize)
-
-    doc.centerM = (frame._width -
-                   (frame._leftPadding + frame._rightPadding)) / 2
-    doc.leftM = frame._leftPadding
-    doc.rightM = frame._width - frame._rightPadding
-    doc.headM = (frame._height - frame._topPadding) + doc.topM
-    doc.bottomM = frame._bottomPadding - doc.topM
-
-    addPlugin(canv, doc, frame="First")
-
-    canv.restoreState()
-
-
-canv = canvas.Canvas("hello.pdf")
-
-
-def drawFirstLSPage(canv, doc):
+def drawFirstLandscape(canv, doc):
     """
     This is the Template of any later drawn Landscape Oriented Page
 
@@ -514,30 +759,25 @@ def drawFirstLSPage(canv, doc):
     two documents at the same time (especially in the presence of multithreading.
     """
     canv.saveState()
-
-    #set Page Size and
-    #some variables
-
-    frame, pagewidth = doc.getFrame("LaterL", orientation="Landscape")
-
-    pagesize = frame._width, frame._height
+    #set Page Size
+    frame, pagesize = doc.getFrame('FirstL', orientation="Landscape")
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width -
                    (frame._leftPadding + frame._rightPadding)) / 2
-    doc.leftM = frame._x1
-    doc.rightM = frame._aW
-    doc.headM = frame._y
-    doc.bottomM = frame._y1
+    doc.leftM = frame._leftPadding
+    doc.rightM = frame._width - frame._rightPadding
+    doc.headM = (frame._height - frame._topPadding) + doc.topM
+    doc.bottomM = frame._bottomPadding - doc.topM
 
-    addPlugin(canv, doc, frame="LaterL")
+    addPlugin(canv, doc, frame="First")
 
     canv.restoreState()
 
 
-def drawLaterPage(canv, doc):
+def drawLaterPortrait(canv, doc):
     """
     This is the Template of any following Portrait Oriented Page
     """
@@ -561,7 +801,7 @@ def drawLaterPage(canv, doc):
     canv.restoreState()
 
 
-def drawLaterLPage(canv, doc):
+def drawLaterLandscape(canv, doc):
     """
     This is the Template of any later drawn Landscape Oriented Page
     """
@@ -586,19 +826,14 @@ def drawLaterLPage(canv, doc):
 
     canv.restoreState()
 
-
-def drawLaterLandscapeMultiPage(canv, doc):
+def drawLaterSpecialPortrait(canv, doc):
     """
-    This is the Template of any later drawn Landscape Oriented Page
+    This is the Template of any following Portrait Oriented Page
     """
     canv.saveState()
+    #set Page Size
 
-    #set Page Size and
-    #some variables
-
-    frame, pagesize = doc.getFrame('LaterL', orientation="Landscape")
-
-    #print(pagesize[0],pagesize[1])
+    frame, pagesize = doc.getFrame('LaterSP', orientation="Portrait")
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -615,7 +850,7 @@ def drawLaterLandscapeMultiPage(canv, doc):
     canv.restoreState()
 
 
-def drawLaterLandscapeSinglePage(canv, doc):
+def drawLaterSpecialLandscape(canv, doc):
     """
     This is the Template of any later drawn Landscape Oriented Page
     """
@@ -624,9 +859,7 @@ def drawLaterLandscapeSinglePage(canv, doc):
     #set Page Size and
     #some variables
 
-    frame, pagesize = doc.getFrame('LaterL', orientation="Landscape")
-
-    #print(pagesize[0],pagesize[1])
+    frame, pagesize = doc.getFrame('LaterSL', orientation="Landscape")
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -641,7 +874,6 @@ def drawLaterLandscapeSinglePage(canv, doc):
     addPlugin(canv, doc, frame="Later")
 
     canv.restoreState()
-
 
 class PageInfo(object):
     """
@@ -721,9 +953,10 @@ class AutoDocTemplate(BaseDocTemplate):
 
     def __init__(self,
                  filename,
-                 onFirstPage=_doNothing,
-                 onLaterPages=_doNothing,
-                 onLaterSPages=_doNothing,
+                 onFirstPage=(_doNothing, 0),
+                 onLaterPages=(_doNothing, 0),
+                 onLaterSPages=(_doNothing, 0),
+                 templates = [],
                  leftMargin=2.5 * cm,
                  rightMargin=2.5 * cm,
                  topMargin=2.5 * cm,
@@ -739,9 +972,8 @@ class AutoDocTemplate(BaseDocTemplate):
         if producer is not None:
             PDFInfo.producer = producer
 
-        BaseDocTemplate.__init__(
-            self,
-            filename,
+
+        super(AutoDocTemplate, self).__init__(filename,
             pagesize=A4,
             leftMargin=leftMargin,
             rightMargin=rightMargin,
@@ -760,35 +992,8 @@ class AutoDocTemplate(BaseDocTemplate):
         else:
             self.showBoundary = 0
 
-        #Portrait Frame
-        frameP = Frame(
-            0,
-            0,
-            self.pagesize[0],
-            self.pagesize[1],
-            leftPadding=self.leftMargin,
-            rightPadding=self.rightMargin,
-            topPadding=self.topMargin,
-            bottomPadding=self.bottomMargin,
-            showBoundary=self.showBoundary,
-            id='Portrait')
-
-        #Landscape Frame
-        frameL = Frame(
-            0,
-            0,
-            self.pagesize[1],
-            self.pagesize[0],
-            leftPadding=self.leftMargin,
-            rightPadding=self.rightMargin,
-            topPadding=self.topMargin,
-            bottomPadding=self.bottomMargin,
-            showBoundary=self.showBoundary,
-            id='Landscape')
-
         #Frame(self.leftMargin, self.bottomMargin, self.width, self.height, id='F1')
 
-        templates = []
         """
         Here we populate our page templates
         Page templates are separated into three stages:
@@ -798,80 +1003,13 @@ class AutoDocTemplate(BaseDocTemplate):
         - on later special page
 
         """
-        f = attrgetter("__name__")
-        ### on first page
-        if f(onFirstPage) == f(drawFirstLPage):
-            templates.append(
-                PageTemplate(
-                    id='FirstL',
-                    frames=frameL,
-                    onPage=onFirstPage,
-                    pagesize=landscape(self.pagesize)))
-        elif f(onFirstPage) == f(drawFirstLSPage):
-            templates.append(
-                self.getMultiColumnTemplate(
-                    tId='FirstML', onPager=onFirstPage))
-        elif f(onFirstPage) == f(drawFirstPage):
-            templates.append(
-                PageTemplate(
-                    id='FirstP',
-                    frames=frameP,
-                    onPage=onFirstPage,
-                    pagesize=self.pagesize))
-        ### on later page
-        if f(onLaterPages) == f(drawLaterLPage):
-            templates.append(
-                PageTemplate(
-                    id='LaterL',
-                    frames=frameL,
-                    onPage=onLaterPages,
-                    pagesize=landscape(self.pagesize)))
-        elif f(onLaterPages) == f(drawLaterLandscapeMultiPage):
-            templates.append(
-                self.getMultiColumnTemplate(
-                    tId='LaterML', onPager=onLaterPages))
-        elif f(onLaterPages) == f(drawLaterLandscapeSinglePage):
-            templates.append(
-                self.getMultiColumnTemplate(
-                    tId='LaterML', onPager=onLaterPages))
-        elif f(onLaterPages) == f(drawLaterPage):
-            templates.append(
-                PageTemplate(
-                    id='LaterP',
-                    frames=frameP,
-                    onPage=onLaterPages,
-                    pagesize=self.pagesize))
-        ### on later special page
-        if f(onLaterSPages) == f(drawLaterLPage):
-            templates.append(
-                PageTemplate(
-                    id='LaterL',
-                    frames=frameL,
-                    onPage=onLaterSPages,
-                    pagesize=landscape(self.pagesize)))
-        elif f(onLaterSPages) == f(drawLaterLandscapeMultiPage):
-            templates.append(
-                self.getMultiColumnTemplate(
-                    tId='LaterML', onPager=onLaterSPages))
-        elif f(onLaterSPages) == f(drawLaterLandscapeSinglePage):
-            templates.append(
-                self.getMultiColumnTemplate(
-                    frameCount=1, tId='LaterSL', onPager=onLaterSPages))
-        elif f(onLaterSPages) == f(drawLaterPage):
-            templates.append(
-                PageTemplate(
-                    id='LaterP',
-                    frames=frameP,
-                    onPage=onLaterSPages,
-                    pagesize=self.pagesize))
 
-        self.addPageTemplates(templates)
         # can be Landscape or Portrait
-        self.onFirstPage = onFirstPage
+        self.onFirstPage, self.framesFirst = onFirstPage
         # Later Portrait or Landscape
-        self.onLaterPages = onLaterPages
+        self.onLaterPages, self.framesLater = onLaterPages
         # Later Landscape to change the Format from Landscape to Portrait or vice versa
-        self.onLaterSPages = onLaterSPages
+        self.onLaterSPages, self.framesLaterS = onLaterSPages
 
         self.bottomTableHeight = 0
 
@@ -884,11 +1022,95 @@ class AutoDocTemplate(BaseDocTemplate):
         self.fontSize = 9
         self.topM = self.fontSize * 1.2
 
+        self.templates_maker()
+
         if self.debug:
             print("PDF Inhalte werden erzeugt...")
-            print("on First Page: ", f(onFirstPage))
-            print("on Later Pages: ", f(onLaterPages))
-            print("on Later Special Pages: ", f(onLaterSPages))
+            print("on First Page: ", (onFirstPage))
+            print("on Later Pages: ", (onLaterPages))
+            print("on Later Special Pages: ", (onLaterSPages))
+
+
+    def templates_maker(self):
+        """
+        register page templates and functions
+
+        returns a list, that simplified looks like this::
+
+            [PageTemplate(id='First',
+                          frames=frameT,
+                          onPage=onFirstPage,
+                          pagesize=self.pagesize),
+             PageTemplate(id='Later',
+                          frames=frameT,
+                          onPage=onLaterPages,
+                          pagesize=self.pagesize)])
+
+        """
+        function_name = attrgetter("__name__")
+
+        templates = []
+        ### on first page
+        frame_count = self.framesFirst
+        tId="LaterP"
+        pagesizeL=False
+        if self.onFirstPage is not _doNothing:
+            firstTemplateName = function_name(self.onFirstPage)
+            if firstTemplateName.startswith("drawFirst"):
+                if firstTemplateName.endswith("Portrait"):
+                    tId="FirstP"
+                    pagesizeL=False
+                elif firstTemplateName.endswith("Landscape"):
+                    pagesizeL=True
+                    tId="FirstL"
+
+        templates.append(self.getMultiColumnTemplate(frameCount=frame_count,
+                                                tId=tId,
+                                                onPager=self.onFirstPage,
+                                                pagesizeL=pagesizeL))
+        ### on later page
+        frame_count = self.framesLater
+        tId="LaterP"
+        pagesizeL=False
+
+        if self.onLaterPages is not _doNothing:
+            laterTemplateName = function_name(self.onLaterPages)
+            if laterTemplateName.startswith("drawLater"):
+                if laterTemplateName.endswith("Portrait"):
+                    tId="LaterP"
+                    pagesizeL=False
+                elif laterTemplateName.endswith("Landscape"):
+                    pagesizeL=True
+                    tId="LaterL"
+
+        templates.append(self.getMultiColumnTemplate(frameCount=frame_count,
+                                                tId=tId,
+                                                onPager=self.onLaterPages,
+                                                pagesizeL=pagesizeL))
+        ### on later special page
+        frame_count = self.framesLaterS
+        tId="LaterP"
+        pagesizeL=False
+
+        if self.onLaterSPages is not _doNothing:
+            laterTemplateName = function_name(self.onLaterSPages)
+            if laterTemplateName.startswith("drawLater"):
+                if laterTemplateName.endswith("Portrait"):
+                    tId="LaterP"
+                    pagesizeL=False
+                elif laterTemplateName.endswith("Landscape"):
+                    pagesizeL=True
+                    tId="LaterSL"
+
+            templates.append(self.getMultiColumnTemplate(frameCount=frame_count,
+                                                    tId=tId,
+                                                    onPager=self.onLaterSPages,
+                                                    pagesizeL=pagesizeL))
+        else:
+            print("on later special page is not defined", vars(self.onLaterSPages))
+
+        self.addPageTemplates(templates)
+
 
     def updatePageInfo(self, pI):
         """
@@ -956,13 +1178,56 @@ class AutoDocTemplate(BaseDocTemplate):
             PageInfo(typ, pos, text, image, line, frame, addPageNumber,
                      rightMargin, shift))
 
-    def getFrame(self, framename, orientation="Portrait"):
+    def createFrame(self, orientation="Portrait",
+                    horizontal_lower=0.,
+                    vertical_lower=0.,
+                    width=0.,
+                    height=0.,
+                    left_padding=0.,
+                    bottom_padding=0.,
+                    right_padding=0.,
+                    top_padding=0.,
+                    overlap=None):
+        """
+        Frame reportlab internal signature::
+
+                        width                    x2,y2
+                +---------------------------------+
+                | l  top_padding                r | h
+                | e +-------------------------+ i | e
+                | f |                         | g | i
+                | t |                         | h | g
+                |   |                         | t | h
+                | p |                         |   | t
+                | a |                         | p |
+                | d |                         | a |
+                |   |                         | d |
+                |   +-------------------------+   |
+                |    bottom padding               |
+                +---------------------------------+
+                (x1,y1) <-- lower left corner
+
+        """
+        return Frame(horizontal_lower,
+                     vertical_lower,
+                     width,
+                     height,
+                     leftPadding=left_padding,
+                     bottomPadding=bottom_padding,
+                     rightPadding=right_padding,
+                     topPadding=top_padding,
+                     id=orientation,
+                     showBoundary=self.showBoundary,
+                     overlapAttachedSpace=overlap,
+                     _debug=None)
+
+    def getFrame(self, temp_name, orientation="Portrait", last=False):
         """
         returns frame
         frame._x1,frame._y1
         frame._width,frame._height
         frame._leftPadding,frame._bottomPadding
-        frame._rightPadding,rame._topPadding
+        frame._rightPadding,frame._topPadding
         and pagesize:
         (x,y)
         """
@@ -970,47 +1235,57 @@ class AutoDocTemplate(BaseDocTemplate):
         f = attrgetter("id")
         frame = None
 
-        for pt in self.pageTemplates[::-1]:
-            if self.debug:
-                print(f(pt))
-            if f(pt) == framename:
-                #thisTemplate = temp
-                for fr in pt.frames:
-                    if f(fr) == orientation:
-                        return fr, (fr._getAvailableWidth(), fr._height)
+        if last:
+            for temp in self.pageTemplates[::-1]:
+                if f(temp).startswith(temp_name):
+                    pageTemplate = temp
+                    break
+
+        else:
+            for temp in self.pageTemplates:
+                if f(temp).startswith(temp_name):
+                    pageTemplate = temp
+                    break
+
+        for frame in pageTemplate.frames:
+            print(f(frame))
+            if f(frame).startswith(orientation):
+                return frame, (frame._getAvailableWidth(), frame._height)
 
         if frame is None:
+            print("Error occured accessing self.pageTemplates", temp_name)
+            raise Exception
             #            #print ( thisTemplate.frames[0].id )
             #            return thisTemplate.frames[0],thisTemplate.pagesize
             #
             #        else:
-            print("Error occured accessing self.pageTemplates", framename)
 
-    def getLastLaterTemplate(self):
+
+    def getLastTemplate(self, temp_name="Later"):
         """
         Return last page template that is a 'Later' template
         """
         f = attrgetter("id")
 
         for temp in self.pageTemplates[::-1]:
-            if f(temp).startswith('Later'):
+            if f(temp).startswith(temp_name):
                 return f(temp)
 
-    def getFirstLaterTemplate(self):
+    def getFirstTemplate(self, temp_name="Later"):
         """
-        Return first page template that is a 'Later' template
+        Return first page template with an id that starts with frame_name
         """
         f = attrgetter("id")
 
         for temp in self.pageTemplates:
-            if f(temp).startswith('Later'):
+            if f(temp).startswith(temp_name):
                 return f(temp)
 
-    def getSpecialTemplate(self):
+    def getSpecialTemplate(self, temp_name="Later"):
         """
-        get the last 'Later' template
+        get the next page action flowable template that starts with temp_name
         """
-        return NextPageTemplate(self.getLastLaterTemplate())
+        return NextPageTemplate(self.getLastTemplate(temp_name=temp_name))
 
     def getMultiColumnTemplate(self,
                                frameCount=2,
@@ -1058,38 +1333,48 @@ class AutoDocTemplate(BaseDocTemplate):
             (x1,y1) <-- lower left corner
 
         """
+        #self._calc()
         if pagesizeL:
             width, height = landscape(self.pagesize)
             fF = "Landscape"
         else:
             width, height = self.pagesize
             fF = "Portrait"
-        #print(width, height)
-        frameWidth = (width -
-                      (self.leftMargin + self.rightMargin)) / float(frameCount)
+
+        fullWidth = width - (self.leftMargin + self.rightMargin)
+
+        print(f">>>> {frameCount} {fF} fullWidth: {fullWidth} width={width} left={self.leftMargin} right={self.rightMargin}")
+
+        if frameCount > 0:
+            frameWidth = fullWidth / float(frameCount)
+
         frameHeight = height - (self.bottomMargin + self.topMargin)
         frames = []
         #construct a frame for each column
         for frame in range(frameCount):
             leftMargin = self.leftMargin + frame * frameWidth
-            column = Frame(leftMargin,
-                           self.bottomMargin,
-                           width=frameWidth,
-                           height=frameHeight,
-                           leftPadding=0.,
-                           bottomPadding=0.,
-                           rightPadding=0.,
-                           topPadding=0.,
-                           id=fId,
-                           showBoundary=0)
-            frames.append(column)
-        fFrame = Frame(self.leftMargin,
-                       self.bottomMargin,
-                       width,
-                       height,
-                       id=fF,
-                       showBoundary=0)
-        frames.append(fFrame)
+            print(">>>>>>>>", leftMargin, frameWidth)
+            frames.append(self.createFrame(orientation=fId,
+                                      horizontal_lower=leftMargin,
+                                      vertical_lower=self.bottomMargin,
+                                      width=frameWidth,
+                                      height=frameHeight,
+                                      left_padding=0.,
+                                      bottom_padding=0.,
+                                      right_padding=0.,
+                                      top_padding=0.,
+                                      overlap=None))
+
+        frames.append(self.createFrame(orientation=fF,
+                                  horizontal_lower=0.,
+                                  vertical_lower=0.,
+                                  width=width,
+                                  height=height,
+                                  left_padding=0.,
+                                  bottom_padding=0.,
+                                  right_padding=0.,
+                                  top_padding=0.,
+                                  overlap=None))
         return PageTemplate(id=tId,
                             frames=frames,
                             onPage=onPager,
@@ -1100,10 +1385,8 @@ class AutoDocTemplate(BaseDocTemplate):
         override base method to add a change of page template after the firstpage.
         """
         self._handle_pageBegin()
-
-        TemplateName = self.getFirstLaterTemplate()
-
-        self._handle_nextPageTemplate(TemplateName)
+        template = self.getFirstTemplate(temp_name="Later")
+        self._handle_nextPageTemplate(template)
 
     def scaleImage(self, thisImage, scaleFactor=None):
         """
@@ -1275,23 +1558,22 @@ class AutoDocTemplate(BaseDocTemplate):
                     flowables.insert(0, f)
                     self.handle_frameEnd()
 
-    def build(self, flowables):
-        """
-        build the document using the flowables.  Annotate the first page using the onFirstPage
-        function and later pages using the onLaterPages function.  The onXXX pages should follow
-        the signature::
 
-            def myOnFirstPage(canvas, document):
-                # do annotations and modify the document
-                ...
-
-        The functions can do things like draw logos, page numbers,
-        footers, etcetera. They can use external variables to vary
-        the look (for example providing page numbering or section names).
-        """
-        self._calc()  #in case we changed margins sizes etc
-        BaseDocTemplate.build(self, flowables)
-        self.PageDecorated = True
+    # def build(self, flowables):
+    #     """
+    #     build the document using the flowables.  Annotate the first page using the onFirstPage
+    #     function and later pages using the onLaterPages function.  The onXXX pages should follow
+    #     the signature::
+    #         def myOnFirstPage(canvas, document):
+    #             # do annotations and modify the document
+    #             ...
+    #     The functions can do things like draw logos, page numbers,
+    #     footers, etcetera. They can use external variables to vary
+    #     the look (for example providing page numbering or section names).
+    #     """
+    #     self._calc()  #in case we changed margins sizes etc
+    #     AutoDocTemplate.build(self, flowables)
+    #     self.PageDecorated = True
 
     def afterFlowable(self, flowable):
         """
@@ -1888,14 +2170,14 @@ def doImage(Img, doc, titlename, sty):
         return ""
 
 
-def PageNext(contents, nextTemplate="LaterL"):
+def PageNext(contents, nextTemplate):
     """
     switch to Landscape on next page
     """
     if isinstance(contents[-1], PageBreak):
-        contents.insert(-1, NextPageTemplate(nextTemplate))
+        contents.insert(-1, nextTemplate)
     else:
-        contents.append(NextPageTemplate(nextTemplate))
+        contents.append(nextTemplate)
         contents.append(PageBreak())
     return contents
 
