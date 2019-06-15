@@ -972,7 +972,6 @@ class AutoDocTemplate(BaseDocTemplate):
         if producer is not None:
             PDFInfo.producer = producer
 
-
         super(AutoDocTemplate, self).__init__(filename,
             pagesize=A4,
             leftMargin=leftMargin,
@@ -1052,7 +1051,7 @@ class AutoDocTemplate(BaseDocTemplate):
         templates = []
         ### on first page
         frame_count = self.framesFirst
-        tId="LaterP"
+        tId="FirstP"
         pagesizeL=False
         if self.onFirstPage is not _doNothing:
             firstTemplateName = function_name(self.onFirstPage)
@@ -1089,14 +1088,14 @@ class AutoDocTemplate(BaseDocTemplate):
                                                 pagesizeL=pagesizeL))
         ### on later special page
         frame_count = self.framesLaterS
-        tId="LaterP"
+        tId="LaterSP"
         pagesizeL=False
 
         if self.onLaterSPages is not _doNothing:
             laterTemplateName = function_name(self.onLaterSPages)
             if laterTemplateName.startswith("drawLater"):
                 if laterTemplateName.endswith("Portrait"):
-                    tId="LaterP"
+                    tId="LaterSP"
                     pagesizeL=False
                 elif laterTemplateName.endswith("Landscape"):
                     pagesizeL=True
