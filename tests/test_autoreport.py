@@ -88,18 +88,20 @@ def drawFirstPortrait(canv, doc):
     """
     canv.saveState()
     #set Page Size
-    frame, pagesize = doc.getFrame('FirstP', orientation="Portrait")
+    frame, pagesize = doc.getFrame(temp_name="First", orientation="FirstP")
+
+    print(frame._width, frame._height)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
 
-    doc.centerM = (frame._width-(frame._leftPadding + frame._rightPadding))/2
-    doc.leftM = frame._leftPadding
-    doc.rightM = frame._width-frame._rightPadding
-    doc.headM = (frame._height - frame._topPadding) + doc.topM
-    doc.bottomM = frame._bottomPadding - doc.topM
+    # doc.centerM = (frame._width-(frame._leftPadding + frame._rightPadding))/2
+    # doc.leftM = frame._leftPadding
+    # doc.rightM = frame._width-frame._rightPadding
+    # doc.headM = (frame._height - frame._topPadding) + doc.topM
+    # doc.bottomM = frame._bottomPadding - doc.topM
 
-    addPlugin(canv, doc, frame="First")
+    #addPlugin(canv, doc, frame="First")
 
     canv.restoreState()
 
@@ -111,18 +113,20 @@ def drawLaterPortrait(canv, doc):
     canv.saveState()
     #set Page Size
 
-    frame, pagesize = doc.getFrame('LaterP', orientation="Portrait")
+    frame, pagesize = doc.getFrame(temp_name="Later", orientation="LaterP")
+
+    print(frame._width, frame._height)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
 
-    doc.centerM = (frame._width - (frame._leftPadding + frame._rightPadding))/2
-    doc.leftM = frame._leftPadding
-    doc.rightM = frame._width-frame._rightPadding
-    doc.headM = (frame._height - frame._topPadding) + doc.topM
-    doc.bottomM = frame._bottomPadding - doc.topM
+    # doc.centerM = (frame._width - (frame._leftPadding + frame._rightPadding))/2
+    # doc.leftM = frame._leftPadding
+    # doc.rightM = frame._width-frame._rightPadding
+    # doc.headM = (frame._height - frame._topPadding) + doc.topM
+    # doc.bottomM = frame._bottomPadding - doc.topM
 
-    addPlugin(canv, doc, frame="Later")
+    #addPlugin(canv, doc, frame="Later")
 
     canv.restoreState()
 
@@ -136,18 +140,20 @@ def drawLaterLandscape(canv, doc):
     #set Page Size and
     #some variables```````````
 
-    frame, pagesize = doc.getFrame('LaterSL', orientation="Landscape")
+    frame, pagesize = doc.getFrame(temp_name="Later", orientation="LaterSL", last=True)
+
+    print(frame._width, frame._height)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
 
-    doc.centerM = (frame._width - (frame._leftPadding + frame._rightPadding))/2
-    doc.leftM = frame._leftPadding
-    doc.rightM = frame._width - frame._rightPadding
-    doc.headM = (frame._height - frame._topPadding) + doc.topM
-    doc.bottomM = frame._bottomPadding - doc.topM
+    # doc.centerM = (frame._width - (frame._leftPadding + frame._rightPadding))/2
+    # doc.leftM = frame._leftPadding
+    # doc.rightM = frame._width - frame._rightPadding
+    # doc.headM = (frame._height - frame._topPadding) + doc.topM
+    # doc.bottomM = frame._bottomPadding - doc.topM
 
-    addPlugin(canv, doc, frame="Later")
+    #addPlugin(canv, doc, frame="Later")
 
     canv.restoreState()
 
@@ -197,9 +203,14 @@ class Test_AutoBaseDoc(unittest.TestCase):
         # Begin of Documentation to Potable Document
         self.doc = ar.AutoDocTemplate(
             self.outname,
-            onFirstPage=(drawFirstPortrait, 1),
-            onLaterPages=(drawLaterPortrait, 1),
-            onLaterSPages=(drawLaterLandscape, 1))
+            onFirstPage=(drawFirstPortrait, 0),
+            onLaterPages=(drawLaterPortrait, 0),
+            onLaterSPages=(drawLaterLandscape, 1),
+            # leftMargin=0. * ar.cm,
+            # rightMargin=0. * ar.cm,
+            # topMargin=0. * ar.cm,
+            # bottomMargin=0. * ar.cm,
+            debug=True)
 
         self.styles = ar.Styles()
         self.styles.registerStyles()
@@ -212,7 +223,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         """
         self.buildDoc()
 
-    #@unittest.skip("simple test")
+    @unittest.skip("simple test")
     def test_buildThrough(self, testTemplate='LaterP'):
         """
         test run through story
@@ -226,7 +237,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         self.addTitle(outTemplate=testTemplate)
         self.addToc()
 
-        testTemplate = ['LaterP', 'LaterL']
+        testTemplate = ['LaterP', 'LaterL', 'LaterSL']
 
         for templt in testTemplate:
             with self.subTest(templt=templt):
@@ -314,7 +325,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
             sty = self.styles.h1
         self.contents = ar.PageNext(self.contents, nextTemplate=nextTemplate)
         # Begin of First Chapter
-        self.contents.append(ar.PageBreak())
+        #self.contents.append(ar.PageBreak())
         part = ar.doHeading(para, sty)
         for p in part:
             self.contents.append(p)
