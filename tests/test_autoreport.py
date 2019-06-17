@@ -203,9 +203,9 @@ class Test_AutoBaseDoc(unittest.TestCase):
         # Begin of Documentation to Potable Document
         self.doc = ar.AutoDocTemplate(
             self.outname,
-            onFirstPage=(drawFirstPortrait, 0),
-            onLaterPages=(drawLaterPortrait, 0),
-            onLaterSPages=(drawLaterLandscape, 1),
+            onFirstPage=(drawFirstPortrait, 1),
+            onLaterPages=(drawLaterPortrait, 1),
+            onLaterSPages=(drawLaterLandscape, 2),
             # leftMargin=0. * ar.cm,
             # rightMargin=0. * ar.cm,
             # topMargin=0. * ar.cm,
@@ -240,16 +240,13 @@ class Test_AutoBaseDoc(unittest.TestCase):
         testTemplate = ['LaterP', 'LaterL', 'LaterSL']
 
         for templt in testTemplate:
-            with self.subTest(templt=templt):
-                self.addChapter(nextTemplate=templt)
-                self.addParagraph()
-                self.addSubChapter()
-                self.addParagraph()
-                self.addSubChapter()
-                self.addParagraph()
-                self.addTable()
-                self.addParagraph()
-                self.addFigure()
+            self.addChapter(nextTemplate=templt)
+            self.addParagraph()
+            #self.addSubChapter()
+            #self.addParagraph()
+            #self.addTable()
+            #self.addParagraph()
+            #self.addFigure()
 
     def test_bigBuildThrough(self, testTemplate='LaterP'):
         """
@@ -307,6 +304,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         # and add the object to the story
         """
         toc = ar.doTabelOfContents()
+        self.contents.append(ar.FrameBreak)
         self.contents.append(ar.Paragraph(para, self.styles.h1))
         self.contents.append(toc)
 

@@ -7,6 +7,9 @@ Created on Wed Aug 26 11:40:26 2015
 import sys
 from .version import version
 
+from reportlab.lib import colors
+from reportlab.lib.colors import Color
+
 __version__ = version
 __license__ = __doc__
 is_python3 = (sys.version_info.major == 3)
@@ -15,6 +18,24 @@ _baseFontNames = dict(normal='Helvetica',
                       italic='Helvetica-Oblique',
                       bold_italic='Helvetica-BoldOblique')
 
+_color_dict = {}
+
+def setup_color_dict(colors):
+    """
+    setup colors
+    only adding items where key is str AND value is Color to the color_dict
+    """
+    for k, v in vars(colors).items():
+        if isinstance(k, str) and isinstance(v, Color):
+            _color_dict.update({k: v})
+
+    _color_dict.update({
+        'gray40': Color(0.4, 0.4, 0.4, 1),
+        'lightred': Color(.980392, .501961, .447059, 1)
+        })
+
+setup_color_dict(colors)
+
 def base_fonts():
     """
     there should be one base font per document
@@ -22,3 +43,9 @@ def base_fonts():
     of the different font weights of that base font
     """
     return _baseFontNames
+
+def color_dict():
+    """
+    base colors
+    """
+    return _color_dict
