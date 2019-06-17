@@ -21,7 +21,7 @@ sys.path.append(importpath)
 import autobasedoc.autorpt as ar
 import autobasedoc.autoplot as ap
 from autobasedoc.autorpt import addPlugin
-from autobasedoc import _baseFontNames
+from autobasedoc import base_fonts
 
 fpath = os.path.join(ar.__font_dir__, 'calibri.ttf')
 font = ap.ft2font.FT2Font(fpath)
@@ -82,7 +82,7 @@ tcDict = {}
 # {value: testVal1.get(value) for value in testMeta.values()}
 
 
-def drawFirstPage(canv, doc):
+def drawFirstPortrait(canv, doc):
     """
     This is the Title Page Template (Portrait Oriented)
     """
@@ -91,7 +91,7 @@ def drawFirstPage(canv, doc):
     frame, pagesize = doc.getFrame('FirstP', orientation="Portrait")
 
     canv.setPageSize(pagesize)
-    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+    canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width-(frame._leftPadding + frame._rightPadding))/2
     doc.leftM = frame._leftPadding
@@ -104,7 +104,7 @@ def drawFirstPage(canv, doc):
     canv.restoreState()
 
 
-def drawLaterPage(canv, doc):
+def drawLaterPortrait(canv, doc):
     """
     This is the Template of any following Portrait Oriented Page
     """
@@ -114,7 +114,7 @@ def drawLaterPage(canv, doc):
     frame, pagesize = doc.getFrame('LaterP', orientation="Portrait")
 
     canv.setPageSize(pagesize)
-    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+    canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width - (frame._leftPadding + frame._rightPadding))/2
     doc.leftM = frame._leftPadding
@@ -127,19 +127,19 @@ def drawLaterPage(canv, doc):
     canv.restoreState()
 
 
-def drawLaterLPage(canv, doc):
+def drawLaterLandscape(canv, doc):
     """
     This is the Template of any later drawn Landscape Oriented Page
     """
     canv.saveState()
 
     #set Page Size and
-    #some variables
+    #some variables```````````
 
-    frame, pagesize = doc.getFrame('LaterL', orientation="Landscape")
+    frame, pagesize = doc.getFrame('LaterSL', orientation="Landscape")
 
     canv.setPageSize(pagesize)
-    canv.setFont(_baseFontNames["normal"], doc.fontSize)
+    canv.setFont(base_fonts()["normal"], doc.fontSize)
 
     doc.centerM = (frame._width - (frame._leftPadding + frame._rightPadding))/2
     doc.leftM = frame._leftPadding
@@ -197,9 +197,9 @@ class Test_AutoBaseDoc(unittest.TestCase):
         # Begin of Documentation to Potable Document
         self.doc = ar.AutoDocTemplate(
             self.outname,
-            onFirstPage=drawFirstPage,
-            onLaterPages=drawLaterPage,
-            onLaterSPages=drawLaterLPage)
+            onFirstPage=(drawFirstPortrait, 1),
+            onLaterPages=(drawLaterPortrait, 1),
+            onLaterSPages=(drawLaterLandscape, 1))
 
         self.styles = ar.Styles()
         self.styles.registerStyles()
@@ -277,14 +277,15 @@ class Test_AutoBaseDoc(unittest.TestCase):
     #@unittest.skip("add title")
     def addTitle(self,
                  para=u"Minimal Example Title",
-                 outTemplate='LaterL'):
+                 outTemplate='LaterSL'):
         """
         # add title
         """
         para = ar.Paragraph(para, self.styles.title)
         self.contents.append(para)
-        ar.PageNext(self.contents, nextTemplate=outTemplate)
-        self.contents.append(ar.PageBreak())
+        nextTemplate = self.doc.getSpecialTemplate(temp_name=outTemplate)
+        self.contents = ar.PageNext(self.contents, nextTemplate=nextTemplate)
+        #self.contents.append(ar.PageBreak())
 
     #@unittest.skip("add toc")
     def addToc(self, para=u"Inhaltsverzeichnis"):
@@ -301,15 +302,17 @@ class Test_AutoBaseDoc(unittest.TestCase):
     #@unittest.skip("add chapter")
     def addChapter(self,
                    para="Text",
-                   nextTemplate='LaterL',
+                   nextTemplate='LaterSL',
                    sty=None):
         """
         # add chapter
         """
+        nextTemplate = self.doc.getSpecialTemplate(temp_name=nextTemplate)
+        #print(nextTemplate)
         # default style h1
         if sty is None:
             sty = self.styles.h1
-        ar.PageNext(self.contents, nextTemplate=nextTemplate)
+        self.contents = ar.PageNext(self.contents, nextTemplate=nextTemplate)
         # Begin of First Chapter
         self.contents.append(ar.PageBreak())
         part = ar.doHeading(para, sty)
