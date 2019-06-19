@@ -18,7 +18,6 @@ from hashlib import sha1
 from operator import attrgetter
 from itertools import count
 from collections import OrderedDict
-import copy
 import random
 import string
 
@@ -32,7 +31,7 @@ from reportlab.platypus import (Image, Paragraph, PageBreak, Table, Spacer,
 from reportlab.platypus.doctemplate import (
     BaseDocTemplate, PageTemplate, NextPageTemplate, _doNothing, LayoutError,
     ActionFlowable, FrameActionFlowable, _addGeneratedContent, _fSizeString,
-    NullActionFlowable)
+    NullActionFlowable, NotAtTopPageBreak)
 
 from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.platypus.frames import Frame
@@ -75,7 +74,7 @@ def drawFirstPortrait(canv, doc):
     """
     canv.saveState()
     #set Page Size
-    frame, pagesize = doc.getFrame('FirstP', orientation="Portrait")
+    frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -124,7 +123,7 @@ def drawFirstLandscape(canv, doc):
     """
     canv.saveState()
     #set Page Size
-    frame, pagesize = doc.getFrame('FirstL', orientation="Landscape")
+    frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -148,7 +147,7 @@ def drawLaterPortrait(canv, doc):
     canv.saveState()
     #set Page Size
 
-    frame, pagesize = doc.getFrame('LaterP', orientation="Portrait")
+    frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -174,7 +173,7 @@ def drawLaterLandscape(canv, doc):
     #set Page Size and
     #some variables
 
-    frame, pagesize = doc.getFrame('LaterL', orientation="Landscape")
+    frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -197,7 +196,7 @@ def drawLaterSpecialPortrait(canv, doc):
     canv.saveState()
     #set Page Size
 
-    frame, pagesize = doc.getFrame('LaterSP', orientation="Portrait")
+    frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -223,7 +222,7 @@ def drawLaterSpecialLandscape(canv, doc):
     #set Page Size and
     #some variables
 
-    frame, pagesize = doc.getFrame('LaterSL', orientation="Landscape")
+    frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -272,14 +271,14 @@ class AutoDocTemplate(BaseDocTemplate):
 
     To define a scheme, where all pages are Portrait but special pages are landscape pages::
 
-        onFirstPage=drawFirstPage
-        onLaterPages=drawLaterPage
-        onLaterSPages=drawLaterLPage
+        onFirstPage=drawFirstPortrait
+        onLaterPages=drawLaterPortrait
+        onLaterSPages=drawLaterSpecialPortrait
 
     To define a scheme, where all pages are Portrait/Landscape and there are no special pages::
 
-        onFirstPage=drawFirstPage/drawFirstLPage
-        onLaterPages=drawLaterPage/drawLaterLPage
+        onFirstPage=drawFirstPortrait/drawFirstLandscape
+        onLaterPages=drawLaterPortrait/drawLaterLandscape
         onLaterSPages=_doNothing
 
     """
@@ -363,90 +362,326 @@ class AutoDocTemplate(BaseDocTemplate):
             print("on Later Pages: ", (onLaterPages))
             print("on Later Special Pages: ", (onLaterSPages))
 
+    @property
+    def template_id(self):
+        return sys._getframe(1).f_code.co_name.strip("draw")
 
     def templates_maker(self):
         """
         register page templates and functions
 
-        returns a list, that simplified looks like this::
+        using a list, that simplified looks like this::
 
             [PageTemplate(id='First',
-                          frames=frameT,
+                          frames=[firstFrame0, firstFrame1, firstFrame2],
                           onPage=onFirstPage,
                           pagesize=self.pagesize),
              PageTemplate(id='Later',
-                          frames=frameT,
+                          frames=[laterFrame0, laterFrame1, laterFrame2],
+                          onPage=onLaterPages,
+                          pagesize=self.pagesize),
+             PageTemplate(id='Special',
+                          frames=[specialFrame0, specialFrame1, specialFrame2],
                           onPage=onLaterPages,
                           pagesize=self.pagesize)])
 
+        the list is sent to::
+
+            BaseDocTemplate.addPageTemplates(list)
+
+        the templates are later accessible by::
+
+            self.pageTemplates[index]
+
+        in self.handle_pageBegin() the next page automatically becomes the first
+        'Later' flowable
+
+        to controll switching on the next page template use
+        self.PageNext e.g::
+
+                nextTemplate = self.doc.getSpecialTemplate(temp_name="")
+                ar.PageNext(self.contents, nextTemplate=nextTemplate)
+
         """
-        function_name = attrgetter("__name__")
+        template_name = lambda x: attrgetter("__name__")(x).strip("draw")
         ### on first page
         frame_count = self.framesFirst
-        template_id="FirstP"
+        template_id = template_name(self.onFirstPage)
         pagesizeL=False
         if self.onFirstPage is not _doNothing:
-            firstTemplateName = function_name(self.onFirstPage)
-            if firstTemplateName.startswith("drawFirst"):
-                if firstTemplateName.endswith("Portrait"):
-                    template_id="FirstP"
+            if template_id.startswith("First"):
+                if template_id.endswith("Portrait"):
                     pagesizeL=False
-                elif firstTemplateName.endswith("Landscape"):
+                elif template_id.endswith("Landscape"):
                     pagesizeL=True
-                    template_id="FirstL"
+
         self.templates.update({template_id:
             self.getMultiColumnTemplate(frameCount=frame_count,
-                                        tId=template_id,
-                                        onPager=self.onFirstPage,
-                                        pagesizeL=pagesizeL)})
+                                        template_id=template_id,
+                                        onPage_template_func=self.onFirstPage,
+                                        pagesize_landscape=pagesizeL)})
 
         ### on later page
         frame_count = self.framesLater
-        template_id="LaterP"
+        template_id = template_name(self.onLaterPages)
         pagesizeL=False
-
         if self.onLaterPages is not _doNothing:
-            laterTemplateName = function_name(self.onLaterPages)
-            if laterTemplateName.startswith("drawLater"):
-                if laterTemplateName.endswith("Portrait"):
-                    template_id="LaterP"
+            if template_id.startswith("Later"):
+                if template_id.endswith("Portrait"):
                     pagesizeL=False
-                elif laterTemplateName.endswith("Landscape"):
-                    template_id="LaterL"
+                elif template_id.endswith("Landscape"):
                     pagesizeL=True
 
-            self.templates.update({template_id:
-                self.getMultiColumnTemplate(frameCount=frame_count,
-                                            tId=template_id,
-                                            onPager=self.onLaterPages,
-                                            pagesizeL=pagesizeL)})
+        self.templates.update({template_id:
+            self.getMultiColumnTemplate(frameCount=frame_count,
+                                        template_id=template_id,
+                                        onPage_template_func=self.onLaterPages,
+                                        pagesize_landscape=pagesizeL)})
+
         ### on later special page
         frame_count = self.framesLaterS
-        template_id="LaterSP"
+        template_id = template_name(self.onLaterSPages)
         pagesizeL=False
-
-        if frame_count < 1:
-            frame_count = 1
-
         if self.onLaterSPages is not _doNothing:
-            laterTemplateName = function_name(self.onLaterSPages)
-            if laterTemplateName.startswith("drawLater"):
-                if laterTemplateName.endswith("Portrait"):
-                    template_id="LaterSP"
-                    pagesizeL=False
-                elif laterTemplateName.endswith("Landscape"):
-                    template_id="LaterSL"
-                    pagesizeL=True
+            if template_id.endswith("Portrait"):
+                pagesizeL=False
+            elif template_id.endswith("Landscape"):
+                pagesizeL=True
 
-
-            self.templates.update({template_id:
-                self.getMultiColumnTemplate(frameCount=frame_count,
-                                            tId=template_id,
-                                            onPager=self.onLaterSPages,
-                                            pagesizeL=pagesizeL)})
+        self.templates.update({template_id:
+            self.getMultiColumnTemplate(frameCount=frame_count,
+                                        template_id=template_id,
+                                        onPage_template_func=self.onLaterSPages,
+                                        pagesize_landscape=pagesizeL)})
 
         self.addPageTemplates(list(self.templates.values()))
 
+
+    def createFrame(self, frame_id="Portrait",
+                    x1=0.,
+                    y1=0.,
+                    width=0.,
+                    height=0.,
+                    left_padding=0.,
+                    bottom_padding=0.,
+                    right_padding=0.,
+                    top_padding=0.,
+                    overlap=None):
+        """
+        Frame reportlab internal signature::
+
+                        width                    x2,y2
+                +---------------------------------+
+                | l  top_padding                r | h
+                | e +-------------------------+ i | e
+                | f |                         | g | i
+                | t |                         | h | g
+                |   |                         | t | h
+                | p |                         |   | t
+                | a |                         | p |
+                | d |                         | a |
+                |   |                         | d |
+                |   +-------------------------+   |
+                |    bottom padding               |
+                +---------------------------------+
+                (x1,y1) <-- lower left corner
+
+        """
+        def makeRandomId(length=3, chars=string.ascii_lowercase):
+            """
+            create a file id of lower case ascii characters with length
+            """
+            return ''.join(random.choice(chars) for _ in range(length))
+
+        return Frame(x1, y1, width, height,
+                     leftPadding=left_padding,
+                     bottomPadding=bottom_padding,
+                     rightPadding=right_padding,
+                     topPadding=top_padding,
+                     id=f"{frame_id}_{makeRandomId()}",
+                     showBoundary=self.showBoundary,
+                     overlapAttachedSpace=overlap,
+                     _debug=None)
+
+    def getFrame(self, temp_name=None, orientation=None, last=False):
+        """
+        returns frame
+
+        to get the master frame inside the pageTemplates
+
+        use orientation=None keyarg (default)
+
+        frame._x1,frame._y1
+        frame._width,frame._height
+        frame._leftPadding,frame._bottomPadding
+        frame._rightPadding,frame._topPadding
+        and pagesize:
+        (x,y)
+        """
+
+        f = attrgetter("id")
+        frame = None
+
+        if temp_name is not None:
+
+            pageTemplate = self.getTemplate(temp_id=temp_name, last=last)
+
+        else:
+            if last:
+                try:
+                    pageTemplate = self.pageTemplates[-1]
+                except:
+                    frame = None
+            else:
+                try:
+                    pageTemplate = self.pageTemplates[0]
+                except:
+                    frame = None
+
+        # to get the master frame
+        if orientation is None:
+            orientation = temp_name
+
+        for frame in pageTemplate.frames:
+            print(f(frame))
+            if f(frame).startswith(orientation):
+                return frame, (frame._getAvailableWidth(), frame._height)
+
+        if frame is None:
+            print("Error occured accessing self.pageTemplates", temp_name)
+            raise Exception
+            #            #print ( thisTemplate.frames[0].id )
+            #            return thisTemplate.frames[0],thisTemplate.pagesize
+            #
+            #        else:
+
+
+    def getTemplate(self, temp_id=None, last=False, as_name=False):
+        """
+        Return first page template with an id that starts with frame_name
+        """
+        f = attrgetter("id")
+        template = None
+
+        if not last:
+            for temp in self.pageTemplates:
+                if f(temp).startswith(temp_id):
+                    template = temp
+                    break
+
+        else:
+            for temp in self.pageTemplates[::-1]:
+                if f(temp).startswith(temp_id):
+                    template = temp
+                    break
+
+        if as_name and template:
+            template = f(template)
+
+        if template is None:
+            print(temp_id, last, as_name)
+
+        return template
+
+    def getSpecialTemplate(self, temp_name="Later"):
+        """
+        get the next page action flowable template that starts with temp_name
+        """
+        return NextPageTemplate(self.getTemplate(temp_id=temp_name, last=True, as_name=True))
+
+    def getMultiColumnTemplate(self,
+                               frameCount=0,
+                               template_id="LaterL",
+                               onPage_template_func=_doNothing,
+                               pagesize_landscape=False):
+        """
+        create a TwoColumn Frame
+
+        This is customized for landscape format pages.
+        if you want portrait, set pagesizeL to False
+
+        Frame vals::
+
+            x1,
+            y1,
+            width,
+            height,
+            leftPadding=6,
+            bottomPadding=6,
+            rightPadding=6,
+            topPadding=6,
+            id=None,
+            showBoundary=0,
+            overlapAttachedSpace=None,
+            _debug=None
+
+        Template Style for Two Frames::
+
+                    width          (x2,y2)
+            +-----------------------------+-----------------------------+
+            | l  top padding            r | h                           |
+            | e +---------------------+ i | e +---------------------+   |
+            | f |                     | g | i |                     |   |
+            | t |                     | h | g |                     |   |
+            |   |                     | t | h |     Second          |   |
+            | p |                     |   | t |     frame           |   |
+            | a |                     | p |   |                     |   |
+            | d |                     | a |   |                     |   |
+            |   |                     | d |   |                     |   |
+            |   +---------------------+   |   +---------------------+   |
+            |    bottom padding           |                             |
+            +-----------------------------+-----------------------------+
+            (x1,y1) <-- lower left corner
+
+        """
+        #self._calc()
+        if pagesize_landscape:
+            width, height = landscape(self.pagesize)
+            fF = "Landscape"
+        else:
+            width, height = self.pagesize
+            fF = "Portrait"
+
+        fullWidth = width - (self.leftMargin + self.rightMargin)
+
+        #print(f">>>> {frameCount} {fF} fullWidth: {fullWidth} width={width} left={self.leftMargin} right={self.rightMargin}")
+
+        if frameCount > 0:
+            frameWidth = fullWidth / float(frameCount)
+
+        frameHeight = height - (self.bottomMargin + self.topMargin)
+        frames = []
+        #construct a frame for each column
+
+        for frame in range(frameCount):
+            leftMargin = self.leftMargin + frame * frameWidth
+            #print(">>>>>>>>", leftMargin, frameWidth)
+            frames.append(self.createFrame(frame_id=f"{fF}{frame}",
+                                      x1=leftMargin,
+                                      y1=self.bottomMargin,
+                                      width=frameWidth,
+                                      height=frameHeight,
+                                      left_padding=0.,
+                                      bottom_padding=0.,
+                                      right_padding=0.,
+                                      top_padding=0.,
+                                      overlap=None))
+
+        frames.append(self.createFrame(frame_id=template_id,
+                                  x1=0.,
+                                  y1=0.,
+                                  width=width,
+                                  height=height,
+                                  left_padding=0.,
+                                  bottom_padding=0.,
+                                  right_padding=0.,
+                                  top_padding=0.,
+                                  overlap=None))
+
+        return PageTemplate(id=template_id,
+                            frames=frames,
+                            onPage=onPage_template_func,
+                            pagesize=(width, height))
 
     def updatePageInfo(self, pI):
         """
@@ -514,234 +749,6 @@ class AutoDocTemplate(BaseDocTemplate):
             PageInfo(typ, pos, text, image, line, frame, addPageNumber,
                      rightMargin, shift))
 
-    def createFrame(self, frame_id="Portrait",
-                    x1=0.,
-                    y1=0.,
-                    width=0.,
-                    height=0.,
-                    left_padding=0.,
-                    bottom_padding=0.,
-                    right_padding=0.,
-                    top_padding=0.,
-                    overlap=None):
-        """
-        Frame reportlab internal signature::
-
-                        width                    x2,y2
-                +---------------------------------+
-                | l  top_padding                r | h
-                | e +-------------------------+ i | e
-                | f |                         | g | i
-                | t |                         | h | g
-                |   |                         | t | h
-                | p |                         |   | t
-                | a |                         | p |
-                | d |                         | a |
-                |   |                         | d |
-                |   +-------------------------+   |
-                |    bottom padding               |
-                +---------------------------------+
-                (x1,y1) <-- lower left corner
-
-        """
-        def makeRandomId(length=3, chars=string.ascii_lowercase):
-            """
-            create a file id of lower case ascii characters with length
-            """
-            return ''.join(random.choice(chars) for _ in range(length))
-
-        return Frame(x1, y1, width, height,
-                     leftPadding=left_padding,
-                     bottomPadding=bottom_padding,
-                     rightPadding=right_padding,
-                     topPadding=top_padding,
-                     id=f"{frame_id}_{makeRandomId()}",
-                     showBoundary=self.showBoundary,
-                     overlapAttachedSpace=overlap,
-                     _debug=None)
-
-    def getFrame(self, temp_name=None, orientation="Portrait", last=False):
-        """
-        returns frame
-        frame._x1,frame._y1
-        frame._width,frame._height
-        frame._leftPadding,frame._bottomPadding
-        frame._rightPadding,frame._topPadding
-        and pagesize:
-        (x,y)
-        """
-
-        f = attrgetter("id")
-        frame = None
-
-        if temp_name is not None:
-
-            pageTemplate = self.getTemplate(temp_name=temp_name, last=last)
-
-        else:
-            if last:
-                try:
-                    pageTemplate = self.pageTemplates[-1]
-                except:
-                    frame = None
-            else:
-                try:
-                    pageTemplate = self.pageTemplates[0]
-                except:
-                    frame = None
-
-        for frame in pageTemplate.frames:
-            print(f(frame))
-            if f(frame).startswith(orientation):
-                return frame, (frame._getAvailableWidth(), frame._height)
-
-        if frame is None:
-            print("Error occured accessing self.pageTemplates", temp_name)
-            raise Exception
-            #            #print ( thisTemplate.frames[0].id )
-            #            return thisTemplate.frames[0],thisTemplate.pagesize
-            #
-            #        else:
-
-
-    def getTemplate(self, temp_name="Later", last=False, as_name=False):
-        """
-        Return first page template with an id that starts with frame_name
-        """
-        f = attrgetter("id")
-        template = None
-
-        if not last:
-            for temp in self.pageTemplates:
-                if f(temp).startswith(temp_name):
-                    template = temp
-                    break
-
-
-        else:
-            for temp in self.pageTemplates[::-1]:
-                if f(temp).startswith(temp_name):
-                    template = temp
-                    break
-
-        if as_name and template:
-            template = f(template)
-
-        if template is None:
-            print(temp_name, last, as_name)
-
-        return template
-
-    def getSpecialTemplate(self, temp_name="Later"):
-        """
-        get the next page action flowable template that starts with temp_name
-        """
-        return NextPageTemplate(self.getTemplate(temp_name=temp_name, last=True, as_name=True))
-
-    def getMultiColumnTemplate(self,
-                               frameCount=2,
-                               tId="LaterL",
-                               onPager=_doNothing,
-                               pagesizeL=True,
-                               fId="Portrait"):
-        """
-        create a TwoColumn Frame
-
-        This is customized for landscape format pages.
-        if you want portrait, set pagesizeL to False
-
-        Frame vals::
-
-            x1,
-            y1,
-            width,
-            height,
-            leftPadding=6,
-            bottomPadding=6,
-            rightPadding=6,
-            topPadding=6,
-            id=None,
-            showBoundary=0,
-            overlapAttachedSpace=None,
-            _debug=None
-
-        Template Style for Two Frames::
-
-                    width          (x2,y2)
-            +-----------------------------+-----------------------------+
-            | l  top padding            r | h                           |
-            | e +---------------------+ i | e +---------------------+   |
-            | f |                     | g | i |                     |   |
-            | t |                     | h | g |                     |   |
-            |   |                     | t | h |     Second          |   |
-            | p |                     |   | t |     frame           |   |
-            | a |                     | p |   |                     |   |
-            | d |                     | a |   |                     |   |
-            |   |                     | d |   |                     |   |
-            |   +---------------------+   |   +---------------------+   |
-            |    bottom padding           |                             |
-            +-----------------------------+-----------------------------+
-            (x1,y1) <-- lower left corner
-
-        """
-        #self._calc()
-        if pagesizeL:
-            width, height = landscape(self.pagesize)
-            fF = "Landscape"
-        else:
-            width, height = self.pagesize
-            fF = "Portrait"
-
-        fullWidth = width - (self.leftMargin + self.rightMargin)
-
-        #print(f">>>> {frameCount} {fF} fullWidth: {fullWidth} width={width} left={self.leftMargin} right={self.rightMargin}")
-
-        if frameCount > 0:
-            frameWidth = fullWidth / float(frameCount)
-
-        frameHeight = height - (self.bottomMargin + self.topMargin)
-        frames = []
-        #construct a frame for each column
-
-        for frame in range(frameCount):
-            leftMargin = self.leftMargin + frame * frameWidth
-            #print(">>>>>>>>", leftMargin, frameWidth)
-            frames.append(self.createFrame(frame_id=f"{fF}{frame}",
-                                      x1=leftMargin,
-                                      y1=self.bottomMargin,
-                                      width=frameWidth,
-                                      height=frameHeight,
-                                      left_padding=0.,
-                                      bottom_padding=0.,
-                                      right_padding=0.,
-                                      top_padding=0.,
-                                      overlap=None))
-
-        frames.append(self.createFrame(frame_id=tId,
-                                  x1=0.,
-                                  y1=0.,
-                                  width=width,
-                                  height=height,
-                                  left_padding=0.,
-                                  bottom_padding=0.,
-                                  right_padding=0.,
-                                  top_padding=0.,
-                                  overlap=None))
-
-        return PageTemplate(id=tId,
-                            frames=frames,
-                            onPage=onPager,
-                            pagesize=(width, height))
-
-    def handle_pageBegin(self):
-        """
-        override base method to add a change of page template after the firstpage.
-        by default: use Later template
-        """
-        self._handle_pageBegin()
-        template = self.getTemplate(temp_name="Later", as_name=True)
-        self._handle_nextPageTemplate(template)
-
     def scaleImage(self, thisImage, scaleFactor=None):
         """
         Function to allow user scaling of factor.
@@ -767,6 +774,15 @@ class AutoDocTemplate(BaseDocTemplate):
         Img.drawHeight = Img.drawHeight * scaling
 
         return Img
+
+    def handle_pageBegin(self):
+        """
+        override base method to add a change of page template after the firstpage.
+        by default: use Later template
+        """
+        self._handle_pageBegin()
+        template = self.getTemplate(temp_id='Later', as_name=True)
+        self._handle_nextPageTemplate(template)
 
     def handle_flowable(self, flowables):
         """
@@ -913,22 +929,6 @@ class AutoDocTemplate(BaseDocTemplate):
                     self.handle_frameEnd()
 
 
-    # def build(self, flowables):
-    #     """
-    #     build the document using the flowables.  Annotate the first page using the onFirstPage
-    #     function and later pages using the onLaterPages function.  The onXXX pages should follow
-    #     the signature::
-    #         def myOnFirstPage(canvas, document):
-    #             # do annotations and modify the document
-    #             ...
-    #     The functions can do things like draw logos, page numbers,
-    #     footers, etcetera. They can use external variables to vary
-    #     the look (for example providing page numbering or section names).
-    #     """
-    #     self._calc()  #in case we changed margins sizes etc
-    #     AutoDocTemplate.build(self, flowables)
-    #     self.PageDecorated = True
-
     def afterFlowable(self, flowable):
         """
         Registers TOC entries.
@@ -980,6 +980,24 @@ class AutoDocTemplate(BaseDocTemplate):
                 level=flowable.level,
                 closed=True)
             self.canv.showOutline()
+
+
+    # def build(self, flowables):
+    #     """
+    #     build the document using the flowables.  Annotate the first page using the onFirstPage
+    #     function and later pages using the onLaterPages function.  The onXXX pages should follow
+    #     the signature::
+    #         def myOnFirstPage(canvas, document):
+    #             # do annotations and modify the document
+    #             ...
+    #     The functions can do things like draw logos, page numbers,
+    #     footers, etcetera. They can use external variables to vary
+    #     the look (for example providing page numbering or section names).
+    #     """
+    #     self._calc()  #in case we changed margins sizes etc
+    #     AutoDocTemplate.build(self, flowables)
+    #     self.PageDecorated = True
+
 
     def figcounter(self):
         """

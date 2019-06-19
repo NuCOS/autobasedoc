@@ -88,9 +88,9 @@ def drawFirstPortrait(canv, doc):
     """
     canv.saveState()
     #set Page Size
-    frame, pagesize = doc.getFrame(temp_name="First", orientation="FirstP")
+    frame, pagesize = doc.getFrame(temp_name=doc.template_id)
 
-    print(frame._width, frame._height)
+    print(doc.template_id, frame._width, frame._height)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -113,9 +113,9 @@ def drawLaterPortrait(canv, doc):
     canv.saveState()
     #set Page Size
 
-    frame, pagesize = doc.getFrame(temp_name="Later", orientation="LaterP")
+    frame, pagesize = doc.getFrame(temp_name=doc.template_id)
 
-    print(frame._width, frame._height)
+    print(doc.template_id, frame._width, frame._height)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -140,9 +140,9 @@ def drawLaterLandscape(canv, doc):
     #set Page Size and
     #some variables```````````
 
-    frame, pagesize = doc.getFrame(temp_name="Later", orientation="LaterSL", last=True)
+    frame, pagesize = doc.getFrame(temp_name=doc.template_id)
 
-    print(frame._width, frame._height)
+    print(doc.template_id, frame._width, frame._height)
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
@@ -305,6 +305,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         """
         toc = ar.doTabelOfContents()
         self.contents.append(ar.FrameBreak)
+        self.contents.append(ar.NotAtTopPageBreak(nextTemplate=self.doc.getTemplate(temp_id="Later")))
         self.contents.append(ar.Paragraph(para, self.styles.h1))
         self.contents.append(toc)
 
