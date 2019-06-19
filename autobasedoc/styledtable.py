@@ -1,10 +1,12 @@
 import random
 import string
 import copy
-from reportlab.platypus import TableStyle, Table
+from reportlab.platypus import TableStyle, Table, Flowable
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.lib.units import inch, cm, mm
 from autobasedoc import base_fonts, colors
+from collections import OrderedDict, defaultdict
+from autobasedoc.fonts import getFont
 
 def getTableStyle(tSty=None, tSpaceAfter=0, tSpaceBefore=0):
     """
@@ -86,7 +88,7 @@ class StyledTable(object):
 
     """
 
-    def __init__(self, gridded=False, leftTablePadding=0, hTableAlignment=None):
+    def __init__(self, gridded=False, leftTablePadding=0, hTableAlignment=None, colWidths=None):
         """
         :param gridded: if True, the table style is gridded, default is False
         :type gridded: bool
@@ -94,11 +96,13 @@ class StyledTable(object):
         :type leftTablePadding: int
         """
         self.hTableAlignment = hTableAlignment
+        self.colWidths = colWidths        
         self.tableData = list()
         self.tableStyleCommands = list()
         # for finalizing specific cell formats
         self.tableExtraStyleCommands = list()
         self.fontsize = 10
+        self.font = getFont(base_fonts()["normal"])
         self.addTableStyleCommand(('FONT', (0, 0), (-1, -1),
                                    base_fonts()["normal"]))
         if gridded:
@@ -265,7 +269,7 @@ class StyledTable(object):
             line.insert(0, "")
         self.tableData.insert(0, line)
         cmd = ('FONT', (self.offsetCol, 0),
-               (-1, 0), _baseFontNames[fonttype])
+               (-1, 0), base_fonts()[fonttype])
         self.tableStyleCommands.append(cmd)
         self.addDoubleLine()
 
@@ -304,7 +308,7 @@ class StyledTable(object):
         """
         if not self.tableData:
             self.tableData = [[""]]
-        return self.layoutTable(hTableAlignment=None, colWidths=None)
+        return self.layoutTable(hTableAlignment=self.hTableAlignment, colWidths=self.colWidths)
 
     def layoutTable(self, hTableAlignment=TA_LEFT, colWidths=None):
         """
@@ -332,8 +336,158 @@ class StyledTable(object):
         table = Table(self.tableData, colWidths=colWidths,
                          spaceBefore=0, spaceAfter=0)
         table.setStyle(self.handleStyleCommands())
-        if hTableAlignment:
+        if hTableAlignment is not None:
             table.hAlign = hTableAlignment
-        elif self.hTableAlignment:
-            table.hAlign = self.hTableAlignment
+        # elif self.hTableAlignment:
+        #     table.hAlign = self.hTableAlignment
         return table
+
+    def layoutFullWidthTable(self, 
+                             frameInfo, 
+                             hTableAlignment=TA_CENTER,
+                             marginSide=1.8*cm,
+                             ratios=[0.3, 0.4, 0.3]):
+        """
+        Returns a table flowable that spans to frame width.
+
+        :param styledTable: a styled table
+        :type styledTable: StyledTable
+
+        :returns: a table flowable element
+        """
+        # workaround for any too large leftpadding --->
+        self.addTableStyleCommand(
+            ('LEFTPADDING', (0, 0), (-1, -1), 0 * cm))
+        tableStyle = self.handleStyleCommands()
+        # columnWidths = self.columnWidthEstim(self.tableData)
+        frameWidth = frameInfo._aW - (frameInfo._x1 * 2.)  # -(frameInfo._leftPadding+frameInfo._rightPadding)
+        #if self.reportType == "campaign" or self.reportType == "release":
+        # NOTE remove workaround later ...
+        print(frameWidth, marginSide)
+        frameWidth *= (1.0 - marginSide/frameWidth)
+        
+        # prepare columnWidths so that they fit on frameWidth and obey ratios
+        if sum(ratios) == 1.:
+            expectedWidths = [r * frameWidth for r in ratios]
+        else:
+            expectedWidths = None
+            logger.lpg(lvl="WARNING",
+                       msg="ratios of styled meta table unbalanced", orig=self.cn)
+        # newColWidths = []
+        # if expectedWidths:
+        #    for real, avail in zip(columnWidths, expectedWidths):
+        #        if not real > avail:
+        #            newColWidths.append(avail)
+        if self.leftTablePadding > 0:
+            expectedWidths.insert(0, self.leftTablePadding)
+        table = Table(self.tableData, colWidths=expectedWidths)
+        table.setStyle(tableStyle)
+        table.hAlign = hTableAlignment
+        return table
+
+    def layoutStyledTable(self, hTableAlignment=TA_CENTER, colWidths=None,
+                          spaceBefore=None, spaceAfter=None, rightPadding=0
+                          ):
+        """
+        Returns a table flowable with automatically estimated column width.
+
+        :param styledTable: a styled table
+        :type styledTable: StyledTable
+        :param hTableAlignment: the table alignment on the frame
+        :type hTableAlignment: int
+        :param colWidths: the columns width in cm, flexible width is -1
+        :type colWidths: list
+        :param spaceBefore: the space above the table in cm
+        :type spaceBefore: float
+        :param spaceAfter: the space below the table in cm
+        :type spaceAfter: float
+
+        :returns: a table flowable element
+        """
+        # styledTable.fontsize = 10
+
+        # general right padding in cells:
+        self.addTableStyleCommand(
+            ('RIGHTPADDING', (0, 0), (-1, -1), rightPadding * cm))
+        # BUG: VALIGN does not work with different font sizes !!!
+        # styledTable.addTableStyleCommand(
+        #    ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'))
+        # styledTable.addTableStyleCommand(
+        #    ('SIZE', (0, 0), (-1, -1), styledTable.fontsize))
+
+        if colWidths is not None:
+            # repair here the leftTablePadding option and the fact that the table data is
+            # provided with an additional empty column at the left side
+            estColWidths = self.columnWidthEstim(self.tableData)
+            # print(estColWidths)
+            if self.colsCount() > len(colWidths):
+                if isinstance(colWidths, tuple):
+                    colWidths = list(colWidths)
+                colWidths.insert(0, estColWidths[0])
+            while -1 in colWidths:
+                i = colWidths.index(-1)
+                colWidths[i] = estColWidths[i] / cm
+            colWidths = [x * cm for x in colWidths]
+
+        if spaceBefore is not None:
+            spaceBefore *= cm
+        if spaceAfter is not None:
+            spaceAfter *= cm
+        # print("COLW", colWidths)
+        table = Table(self.tableData, colWidths=colWidths,
+                         spaceBefore=spaceBefore, spaceAfter=spaceAfter)
+        tableStyle = self.handleStyleCommands()
+        table.setStyle(tableStyle)
+        table.hAlign = hTableAlignment
+        return table
+
+    def columnWidthEstim(self, data):
+        """
+        Returns minimum column width for all lines in the column.
+
+        :param data: the table data
+        :type data: list of list
+
+        :returns: list of cell width estimations
+        """
+        cell_widths = defaultdict(int)
+
+        for line in data:
+            for i, cell in enumerate(line):
+                cell_width_est = self.widthEstim(cell)
+                if cell_width_est > cell_widths[i]:
+                    cell_widths[i] = cell_width_est
+
+        return [cell_widths[i] for i in range(len(list(cell_widths)))]
+
+
+    def widthEstim(self, obj, name="table"):
+        """
+        Estimates the width of an object.
+        If obj is of type str: estimates the width of the text on page, using the self.font
+        If object is of type reportlab.Flowable, then return the result of minWidth()
+
+        :param obj: the object which will be estimated
+        :type obj: object
+        :param name: the name of the fontszize
+        :type name: str
+
+        :returns: the estimated width
+        """
+        if isinstance(obj, (float, int)):
+            return int(
+                self.font.stringWidth("%s" % obj, self.fontsize))
+        elif isinstance(obj, str):
+            # print(obj,np.ceil(self.font.stringWidth(obj,self.fontsizes[name])))
+            largestStr = sorted(obj.split("\n"), key=lambda x: len(x))[-1]
+            # print(largestStr)
+            return int(
+                self.font.stringWidth(largestStr, self.fontsize))
+        elif isinstance(obj, Flowable):
+            return obj.minWidth()
+        elif obj is None:
+            return 0.
+        elif isinstance(obj, list):
+            return 100.
+        else:
+            raise (NotImplementedError(type(obj)))

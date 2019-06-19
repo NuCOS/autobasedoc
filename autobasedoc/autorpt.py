@@ -42,7 +42,7 @@ from reportlab.lib.styles import ParagraphStyle
 # Configure Fonts!
 from reportlab.pdfbase.pdfdoc import PDFInfo
 
-from autobasedoc import base_fonts, color_dict
+from autobasedoc import base_fonts, color_dict, colors
 from autobasedoc.styledtable import StyledTable
 from autobasedoc.styles import StyleSheet, Styles
 from autobasedoc.pageinfo import addPlugin, PageInfo
