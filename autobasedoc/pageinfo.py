@@ -181,7 +181,7 @@ def addPlugin(canv, doc, frame=None, talkative=False):
                 _left_margin = getattr(pitem, "leftMargin")
             if getattr(pitem, "topMargin", None):
                 _top_margin = getattr(pitem, "topMargin")
-            if getattr(pitem, "rightMargin", None):
+            if getattr(pitem, "bottomMargin", None):
                 _bottom_margin = getattr(pitem, "bottomMargin")
 
             if frame.id.startswith(pitem.frame):
