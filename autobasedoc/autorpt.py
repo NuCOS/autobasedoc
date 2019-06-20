@@ -668,6 +668,9 @@ class AutoDocTemplate(BaseDocTemplate):
                     frame="First",
                     addPageNumber=False,
                     rightMargin=None,
+                    leftMargin=None,
+                    topMargin=None,
+                    bottomMargin=None,
                     shift=None):
         """
         add header and footer elements, that raster into the frame::
@@ -706,7 +709,9 @@ class AutoDocTemplate(BaseDocTemplate):
         """
         self.updatePageInfo(
             PageInfo(typ, pos, text, image, line, frame, addPageNumber,
-                     rightMargin, shift))
+                     rightMargin=rightMargin, leftMargin=leftMargin,
+                     topMargin=topMargin, bottomMargin=bottomMargin,
+                     shift=shift))
 
     def scaleImage(self, thisImage, scaleFactor=None):
         """
