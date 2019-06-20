@@ -27,7 +27,7 @@ def addPlugin(canv, doc, frame=None, talkative=False):
             return (frame._width - (doc.leftMargin + doc.rightMargin)) / 2.
         if frame is not None:
             return (frame._width - (frame._leftPadding + frame._rightPadding)) / 2.
-        return self.pagesize[0]/2.
+        return doc.pagesize[0]/2.
 
     #leftM
     def left_margin():
@@ -43,7 +43,7 @@ def addPlugin(canv, doc, frame=None, talkative=False):
             return frame._width - doc.rightMargin
         if frame is not None:
             return frame._width - frame._rightPadding
-        return self.pagesize[0]
+        return doc.pagesize[0]
 
     #headM
     def head_margin():
@@ -51,7 +51,7 @@ def addPlugin(canv, doc, frame=None, talkative=False):
             return frame._height - (doc.topMargin + doc.topM)
         if frame is not None:
             return frame._height - (frame._topPadding + doc.topM)
-        return self.pagesize[1]
+        return doc.pagesize[1]
 
     #bottomM
     def bottom_margin():
