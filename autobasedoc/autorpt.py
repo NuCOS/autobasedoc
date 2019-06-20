@@ -79,13 +79,6 @@ def drawFirstPortrait(canv, doc):
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
 
-    doc.centerM = (frame._width -
-                   (frame._leftPadding + frame._rightPadding)) / 2
-    doc.leftM = frame._leftPadding
-    doc.rightM = frame._width - frame._rightPadding
-    doc.headM = (frame._height - frame._topPadding) + doc.topM
-    doc.bottomM = frame._bottomPadding - doc.topM
-
     addPlugin(canv, doc, frame="First")
 
     canv.restoreState()
@@ -128,13 +121,6 @@ def drawFirstLandscape(canv, doc):
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
 
-    doc.centerM = (frame._width -
-                   (frame._leftPadding + frame._rightPadding)) / 2
-    doc.leftM = frame._leftPadding
-    doc.rightM = frame._width - frame._rightPadding
-    doc.headM = (frame._height - frame._topPadding) + doc.topM
-    doc.bottomM = frame._bottomPadding - doc.topM
-
     addPlugin(canv, doc, frame="First")
 
     canv.restoreState()
@@ -151,13 +137,6 @@ def drawLaterPortrait(canv, doc):
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
-
-    doc.centerM = (frame._width -
-                   (frame._leftPadding + frame._rightPadding)) / 2
-    doc.leftM = frame._leftPadding
-    doc.rightM = frame._width - frame._rightPadding
-    doc.headM = (frame._height - frame._topPadding) + doc.topM
-    doc.bottomM = frame._bottomPadding - doc.topM
 
     addPlugin(canv, doc, frame="Later")
 
@@ -178,13 +157,6 @@ def drawLaterLandscape(canv, doc):
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
 
-    doc.centerM = (frame._width -
-                   (frame._leftPadding + frame._rightPadding)) / 2
-    doc.leftM = frame._leftPadding
-    doc.rightM = frame._width - frame._rightPadding
-    doc.headM = (frame._height - frame._topPadding) + doc.topM
-    doc.bottomM = frame._bottomPadding - doc.topM
-
     addPlugin(canv, doc, frame="Later")
 
     canv.restoreState()
@@ -200,13 +172,6 @@ def drawLaterSpecialPortrait(canv, doc):
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
-
-    doc.centerM = (frame._width -
-                   (frame._leftPadding + frame._rightPadding)) / 2
-    doc.leftM = frame._leftPadding
-    doc.rightM = frame._width - frame._rightPadding
-    doc.headM = (frame._height - frame._topPadding) + doc.topM
-    doc.bottomM = frame._bottomPadding - doc.topM
 
     addPlugin(canv, doc, frame="Later")
 
@@ -226,13 +191,6 @@ def drawLaterSpecialLandscape(canv, doc):
 
     canv.setPageSize(pagesize)
     canv.setFont(base_fonts()["normal"], doc.fontSize)
-
-    doc.centerM = (frame._width -
-                   (frame._leftPadding + frame._rightPadding)) / 2
-    doc.leftM = frame._leftPadding
-    doc.rightM = frame._width - frame._rightPadding
-    doc.headM = (frame._height - frame._topPadding) + doc.topM
-    doc.bottomM = frame._bottomPadding - doc.topM
 
     addPlugin(canv, doc, frame="Later")
 
@@ -350,8 +308,9 @@ class AutoDocTemplate(BaseDocTemplate):
         self.pageInfos = OrderedDict()
 
         self.lineWidth = 0.15
-        self.fontSize = 9
-        self.topM = self.fontSize * 1.2
+        self.fontSize = 12
+        self.topM = self.fontSize * 0.77
+        self.bottomM = self.fontSize - self.topM
         self.templates={}
 
         self.templates_maker()
