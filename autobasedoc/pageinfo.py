@@ -23,7 +23,7 @@ def addPlugin(canv, doc, frame=None, talkative=False):
 
     #centerM
     def center_margin():
-        if _left_margin and doc.leftMargin and doc.rightMargin and frame is not None:
+        if (_left_margin or _right_margin) and doc.leftMargin and doc.rightMargin and frame is not None:
             return (frame._width - (doc.leftMargin + doc.rightMargin)) / 2.
         if frame is not None:
             return (frame._width - (frame._leftPadding + frame._rightPadding)) / 2.
@@ -194,6 +194,7 @@ def addPlugin(canv, doc, frame=None, talkative=False):
                         text += "%d" % doc.page
                     if talkative:
                         print(text)
+
                 if pitem.typ.startswith("header"):
                     print(text)
                     #Header
@@ -223,6 +224,7 @@ def addPlugin(canv, doc, frame=None, talkative=False):
                         drawLine(pitem, posy + doc.topM)
                 else:
                     break
+
         if len(lkeys) == 0:
             addPlugin(canv, doc, frame=None)
     else:
@@ -246,7 +248,10 @@ class PageInfo(object):
     """
 
     def __init__(self, typ, pos, text, image, line, frame, addPageNumber,
-                 rightMargin=None, leftMargin=None, topMargin=None, bottomMargin=None, shift=None):
+                 rightMargin=None, leftMargin=None,
+                 topMargin=None, bottomMargin=None,
+                 shift=None):
+
         self.typ = typ
         self.pos = pos
         self.text = text
@@ -254,6 +259,7 @@ class PageInfo(object):
         self.line = line
         self.frame = frame
         self.addPageNumber = addPageNumber
+
         if rightMargin is not None:
             setattr(self, "rightMargin", rightMargin)
         if leftMargin is not None:

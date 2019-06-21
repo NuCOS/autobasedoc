@@ -33,7 +33,6 @@ from reportlab.platypus.doctemplate import (
     ActionFlowable, FrameActionFlowable, _addGeneratedContent, _fSizeString,
     NullActionFlowable, NotAtTopPageBreak)
 
-from reportlab.platypus.tableofcontents import TableOfContents
 from reportlab.platypus.frames import Frame
 from reportlab.platypus.flowables import SlowPageBreak, DDIndenter, PageBreakIfNotEmpty
 from reportlab.pdfgen import canvas
@@ -47,6 +46,7 @@ from autobasedoc.styledtable import StyledTable
 from autobasedoc.styles import StyleSheet, Styles
 from autobasedoc.pageinfo import addPlugin, PageInfo
 from autobasedoc.fonts import registerFont, setFonts, setTtfFonts, getFont
+from autobasedoc.tableofcontents import AutoTableOfContents
 
 _baseFontNames = base_fonts()
 _color_dict = color_dict()
@@ -247,10 +247,10 @@ class AutoDocTemplate(BaseDocTemplate):
                  onLaterPages=(_doNothing, 0),
                  onLaterSPages=(_doNothing, 0),
                  templates = [],
-                 leftMargin=2.5 * cm,
-                 rightMargin=2.5 * cm,
-                 topMargin=2.5 * cm,
-                 bottomMargin=2.5 * cm,
+                 leftMargin=0.5 * cm,
+                 rightMargin=0.5 * cm,
+                 topMargin=0.5 * cm,
+                 bottomMargin=0.5 * cm,
                  title=None,
                  author=None,
                  subject=None,
@@ -504,7 +504,7 @@ class AutoDocTemplate(BaseDocTemplate):
         for frame in pageTemplate.frames:
             print(f(frame))
             if f(frame).startswith(orientation):
-                return frame, (frame._getAvailableWidth(), frame._height)
+                return frame, pageTemplate.pagesize
 
         if frame is None:
             print("Error occured accessing self.pageTemplates", temp_name)
@@ -605,37 +605,48 @@ class AutoDocTemplate(BaseDocTemplate):
 
         #print(f">>>> {frameCount} {fF} fullWidth: {fullWidth} width={width} left={self.leftMargin} right={self.rightMargin}")
 
-        if frameCount > 0:
-            frameWidth = fullWidth / float(frameCount)
-
         frameHeight = height - (self.bottomMargin + self.topMargin)
         frames = []
         #construct a frame for each column
 
-        for frame in range(frameCount):
-            leftMargin = self.leftMargin + frame * frameWidth
-            #print(">>>>>>>>", leftMargin, frameWidth)
-            frames.append(self.createFrame(frame_id=f"{fF}{frame}",
-                                      x1=leftMargin,
+        if frameCount > 0:
+            frameWidth = fullWidth / float(frameCount)
+
+            for frame in range(frameCount):
+                leftMargin = self.leftMargin + frame * frameWidth
+                #print(">>>>>>>>", leftMargin, frameWidth)
+                frames.append(self.createFrame(frame_id=f"{fF}{frame}",
+                                          x1=leftMargin,
+                                          y1=self.bottomMargin,
+                                          width=frameWidth,
+                                          height=frameHeight,
+                                          left_padding=0.,
+                                          bottom_padding=0.,
+                                          right_padding=0.,
+                                          top_padding=0.,
+                                          overlap=None))
+
+            frames.append(self.createFrame(frame_id=template_id,
+                                      x1=0.,
+                                      y1=0.,
+                                      width=width,
+                                      height=height,
+                                      left_padding=0.,
+                                      bottom_padding=0.,
+                                      right_padding=0.,
+                                      top_padding=0.,
+                                      overlap=None))
+        else:
+            frames.append(self.createFrame(frame_id=template_id,
+                                      x1=self.leftMargin,
                                       y1=self.bottomMargin,
-                                      width=frameWidth,
+                                      width=fullWidth,
                                       height=frameHeight,
                                       left_padding=0.,
                                       bottom_padding=0.,
                                       right_padding=0.,
                                       top_padding=0.,
                                       overlap=None))
-
-        frames.append(self.createFrame(frame_id=template_id,
-                                  x1=0.,
-                                  y1=0.,
-                                  width=width,
-                                  height=height,
-                                  left_padding=0.,
-                                  bottom_padding=0.,
-                                  right_padding=0.,
-                                  top_padding=0.,
-                                  overlap=None))
 
         return PageTemplate(id=template_id,
                             frames=frames,
@@ -862,17 +873,18 @@ class AutoDocTemplate(BaseDocTemplate):
                             0:0] = S  # put splitted flowables back on the list
                 else:
                     if hasattr(f, '_postponed'):
+                        pass
                         #print( f.__class__.__name__, self.frame.id, f.drawWidth, f.drawHeight, )
 
-                        ident = "Flowable %s%s too large on page %d in frame %r%s of template %r" % \
-                        (self._fIdent(f, 60, frame),
-                         _fSizeString(f),
-                         self.page,
-                         self.frame.id,
-                         self.frame._aSpaceString(),
-                         self.pageTemplate.id)
-                        #leave to keep apart from the raise
-                        raise LayoutError(ident)
+                        # ident = "Flowable %s%s too large on page %d in frame %r%s of template %r" % \
+                        # (self._fIdent(f, 60, frame),
+                        #  _fSizeString(f),
+                        #  self.page,
+                        #  self.frame.id,
+                        #  self.frame._aSpaceString(),
+                        #  self.pageTemplate.id)
+                        # #leave to keep apart from the raise
+                        # raise LayoutError(ident)
                     # this ought to be cleared when they are finally drawn!
                     f._postponed = 1
                     mbe = getattr(self, '_multiBuildEdits', None)
@@ -919,8 +931,9 @@ class AutoDocTemplate(BaseDocTemplate):
 
             self.currSpaceToBottom = self.frame._y + self.frame._y1p  # <-- not necessary
 
-            self.canv.bookmarkPage(
-                flowable.key, fit='XYZ', top=self.currSpaceToBottom)
+            self.canv.bookmarkPage(flowable.key,
+                                   fit='XYZ',
+                                   top=self.currSpaceToBottom)
             ##            if flowable.fullpage:
             ##                flowable.key='Diagramm'+flowable.key
             #self.canv.bookmarkPage(flowable.key, fit='FitH', top=800)
@@ -979,7 +992,7 @@ def doTabelOfContents():
     """
     returns toc with 3 customized headings level styles
     """
-    toc = TableOfContents()
+    toc = AutoTableOfContents()
     toc.levelStyles = [
         ParagraphStyle(
             fontSize=12,
@@ -1005,19 +1018,38 @@ def doTabelOfContents():
         ]
     return toc
 
+
 class Header(NullActionFlowable):
     _ids = count(0)
+
+    def __init__(self):
+        super(Header, self).__init__()
+        self._id = self._ids.__next__()
 
     @classmethod
     def cln(cls):
         return cls.__name__
+
+    @property
+    def id(self):
+        return str(self._id)
+
 
 class Footer(NullActionFlowable):
     _ids = count(0)
 
+    def __init__(self):
+        super(Footer, self).__init__()
+        self._id = self._ids.__next__()
+
     @classmethod
     def cln(cls):
         return cls.__name__
+
+    @property
+    def id(self):
+        return str(self._id)
+
 
 class Bookmark(NullActionFlowable):
     """
@@ -1029,32 +1061,31 @@ class Bookmark(NullActionFlowable):
     """
     _ids = count(0)
 
+    def __init__(self, title, level=0):
+        super(Bookmark, self).__init__()
+        self.title = title
+        self._level = level
+        self._id = self._ids.__next__()
+        self.key = self.createBookmarkKey()
+
     @classmethod
     def cln(cls):
         return cls.__name__
 
-    def __init__(self, title, level=0):
-        NullActionFlowable.__init__(self)
+    @property
+    def level(self):
+        return self._level
 
-        self.title = title
-        self.level = level
-
-        if is_python3:
-            self.id = self._ids.__next__()
-        else:
-            self.id = self._ids.next()
-        self.key = self.createBookmarkKey()
+    @property
+    def id(self):
+        return str(self._id)
 
     def createBookmarkKey(self):
         """
-        creates a Bookmark Key using title, level and the identity of this ActionFlowable
+        creates a Bookmark Key using title, level
+        and the identity of this ActionFlowable
         """
-        key = self.title
-        key += str(self.level)
-        key += str(self.id)
-
-        key = key.encode(encoding="utf-8")
-
+        key = f"{self.title}{self.level}{self.id}".encode(encoding="utf-8")
         return sha1(key).hexdigest()
 
 
