@@ -793,23 +793,13 @@ class AutoDocTemplate(BaseDocTemplate):
                 #f.setStyle([("GRID", (0, 0), (-1, -1), 0.5, colors.black)])
             elif isinstance(f, Spacer):
                 pass
-                """
-                elif isinstance(f,Spacer):
-                    pass
-                elif isinstance(f,Flowable):
-                    if self.debug:
-                        f._showBoundary()
-                        print(#f.getSpaceBefore(),
-                            frame._aH,"<--")
-                            #frame._y1p)
-                """
             if isinstance(f, ap.PdfImage):
                 #print("height of image:",f.drawHeight)
                 #print("height of frame:",frame._aH)
                 xfactor = getattr(f, "_userScaleFactor", None)
                 factor = 1.
 
-                if not xfactor is None:
+                if xfactor is not None:
                     #print( "applying scale", xfactor)
                     factor = xfactor
                     f = self._scaleApply(f, factor)
