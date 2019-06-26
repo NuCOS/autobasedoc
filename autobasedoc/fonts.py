@@ -26,8 +26,8 @@ def registerFont(faceName, afm, pfb):
 
     face = pdfmetrics.EmbeddedType1Face(afm, pfb)
     pdfmetrics.registerTypeFace(face)
-    justFont = pdfmetrics.Font(faceName, faceName, 'WinAnsiEncoding')
-    pdfmetrics.registerFont(justFont)
+    font = pdfmetrics.Font(faceName, faceName, 'WinAnsiEncoding')
+    pdfmetrics.registerFont(font)
 
 
 def setTtfFonts(familyName,

@@ -1,5 +1,5 @@
 
-def addPlugin(canv, doc, frame="First"):
+def addPlugin(canv, doc, frame=None, talkative=False):
     """
     holds all functions to handle placing all elements on the canvas...
 
@@ -16,6 +16,50 @@ def addPlugin(canv, doc, frame="First"):
     please define an empty pageTemplate with frame='Later'
 
     """
+    _left_margin = False
+    _right_margin = False
+    _top_margin = False
+    _bottom_margin = False
+
+    #centerM
+    def center_margin():
+        if (_left_margin or _right_margin) and doc.leftMargin and doc.rightMargin and frame is not None:
+            return (frame._width - (doc.leftMargin + doc.rightMargin)) / 2.
+        if frame is not None:
+            return (frame._width - (frame._leftPadding + frame._rightPadding)) / 2.
+        return doc.pagesize[0]/2.
+
+    #leftM
+    def left_margin():
+        if _left_margin and doc.leftMargin:
+            return doc.leftMargin
+        if frame is not None:
+            return frame._leftPadding
+        return 0.
+
+    #rightM
+    def right_margin():
+        if _right_margin and doc.rightMargin:
+            return frame._width - doc.rightMargin
+        if frame is not None:
+            return frame._width - frame._rightPadding
+        return doc.pagesize[0]
+
+    #headM
+    def head_margin():
+        if _top_margin and doc.topMargin:
+            return frame._height - (doc.topMargin + doc.topM)
+        if frame is not None:
+            return frame._height - (frame._topPadding + doc.topM)
+        return doc.pagesize[1]
+
+    #bottomM
+    def bottom_margin():
+        if _bottom_margin and doc.bottomMargin:
+            return doc.bottomMargin + doc.bottomM
+        if frame is not None:
+            return frame._bottomPadding + doc.bottomM
+        return 0.
 
     def drawString(pitem, text, posy):
         """
@@ -27,24 +71,21 @@ def addPlugin(canv, doc, frame="First"):
 
         """
         if pitem.pos == "l":
-            canv.drawString(doc.leftMargin, posy, text)
+            canv.drawString(left_margin(), posy, text)
 
         elif pitem.pos == "c":
-            canv.drawCentredString(doc.centerM, posy, text)
+            canv.drawCentredString(center_margin(), posy, text)
 
         elif pitem.pos == "r":
-            canv.drawRightString(doc.rightM, posy, text)
+            canv.drawRightString(right_margin(), posy, text)
 
-    def drawLine(pitem, posy):  #,rightMargin=None
+    def drawLine(pitem, posy):
         """
         draws a Line in posy::
 
             l---------------r
         """
-        left, right = doc.leftM, doc.rightM
-
-        #print("drawLine at posy:",posy)
-        #print("from %s to %s"%(left,right))
+        left, right = left_margin(), right_margin()
 
         if getattr(pitem, "rightMargin", None):
             right -= pitem.rightMargin
@@ -94,36 +135,31 @@ def addPlugin(canv, doc, frame="First"):
         x, y = pos
 
         ### here must be placed a positioning for the three locations
-
         if pitem.typ.startswith("header"):
             if pitem.pos.startswith("r"):
-                x = doc.rightM
+                x = right_margin()
                 x -= pitem.image.drawWidth
                 y -= pitem.image.drawHeight
-                x, y = shift(pitem, x, y)
 
             if pitem.pos.startswith("l"):
-                x = doc.leftM
+                x = left_margin()
                 #x-=pitem.image.drawWidth
                 y -= pitem.image.drawHeight
-                x, y = shift(pitem, x, y)
-            else:
-                x, y = shift(pitem, x, y)
+            #finally
+            x, y = shift(pitem, x, y)
 
         elif pitem.typ.startswith("footer"):
             if pitem.pos.startswith("r"):
-                x = doc.rightM
+                x = right_margin()
                 x -= pitem.image.drawWidth
                 y -= pitem.image.drawHeight
-                x, y = shift(pitem, x, y)
 
             if pitem.pos.startswith("l"):
-                x = doc.leftM
+                x = left_margin()
                 #x-=pitem.image.drawWidth
                 y -= pitem.image.drawHeight
-                x, y = shift(pitem, x, y)
-            else:
-                x, y = shift(pitem, x, y)
+            #finally
+            x, y = shift(pitem, x, y)
 
         pitem.image.drawOn(canv, x, y)
         #print("added image")
@@ -131,28 +167,42 @@ def addPlugin(canv, doc, frame="First"):
     lkeys = []
 
     if doc.pageInfos:
+        if frame is None:
+            return
 
         for pkey, pitem in doc.pageInfos.items():
-            #print(pkey)
+            if talkative:
+                print(pkey)
             #pitem=doc.pageInfos[pkey]
-            #print( pitem.frame )
 
-            if pitem.frame.startswith(frame):
+            if getattr(pitem, "rightMargin", None) is not None:
+                _right_margin = getattr(pitem, "rightMargin")
+            if getattr(pitem, "leftMargin", None) is not None:
+                _left_margin = getattr(pitem, "leftMargin")
+            if getattr(pitem, "topMargin", None) is not None:
+                _top_margin = getattr(pitem, "topMargin")
+            if getattr(pitem, "bottomMargin", None) is not None:
+                _bottom_margin = getattr(pitem, "bottomMargin")
+
+            if frame.id.startswith(pitem.frame):
                 lkeys.append(pkey)
 
                 text = "%s" % pitem.text
                 #add Page Number if requested
                 if pitem.addPageNumber:
-                    text += "%d" % doc.page
-                    #if is_talkative:
-                    print(text)
+                    if doc.page:
+                        text += "%d" % doc.page
+                    if talkative:
+                        print(text)
+
                 if pitem.typ.startswith("header"):
+                    print(text)
                     #Header
-                    posy = doc.headM
-                    if not pitem.text is None:
+                    posy = head_margin()
+                    if pitem.text is not None:
                         #print("drawString",text)
                         drawString(pitem, text, posy)
-                    elif not pitem.image is None:
+                    elif pitem.image is not None:
                         pos = (doc.leftMargin, posy)
                         drawImage(pitem, pos)
                         #print("drawImage",pitem.image)
@@ -162,10 +212,10 @@ def addPlugin(canv, doc, frame="First"):
 
                 elif pitem.typ.startswith("footer"):
                     #Footer
-                    posy = doc.bottomM
-                    if not pitem.text is None:
+                    posy = bottom_margin()
+                    if pitem.text is not None:
                         drawString(pitem, text, posy)
-                    elif not pitem.image is None:
+                    elif pitem.image is not None:
                         pos = (doc.leftMargin, posy)
                         drawImage(pitem, pos)
                         #print("drawImage",pitem.image)
@@ -174,8 +224,9 @@ def addPlugin(canv, doc, frame="First"):
                         drawLine(pitem, posy + doc.topM)
                 else:
                     break
+
         if len(lkeys) == 0:
-            addPlugin(canv, doc, frame="First")
+            addPlugin(canv, doc, frame=None)
     else:
         pass
         #print("going through the pageInfo items:",lkeys)
@@ -197,7 +248,10 @@ class PageInfo(object):
     """
 
     def __init__(self, typ, pos, text, image, line, frame, addPageNumber,
-                 rightMargin=None, shift=None):
+                 rightMargin=None, leftMargin=None,
+                 topMargin=None, bottomMargin=None,
+                 shift=None):
+
         self.typ = typ
         self.pos = pos
         self.text = text
@@ -205,7 +259,14 @@ class PageInfo(object):
         self.line = line
         self.frame = frame
         self.addPageNumber = addPageNumber
+
         if rightMargin is not None:
             setattr(self, "rightMargin", rightMargin)
+        if leftMargin is not None:
+            setattr(self, "leftMargin", leftMargin)
+        if topMargin is not None:
+            setattr(self, "topMargin", topMargin)
+        if bottomMargin is not None:
+            setattr(self, "bottomMargin", bottomMargin)
         if shift is not None:
             setattr(self, "shift", shift)
