@@ -95,8 +95,11 @@ class StyledTable(object):
         :param leftTablePadding: if a number > 0 is inserted, the table gets a left empty column to be like left-padded
         :type leftTablePadding: int
         """
-        self.hTableAlignment = hTableAlignment
-        self.colWidths = colWidths        
+        self.hTableAlignment = hTableAlignment or TA_CENTER
+        self.colWidths = colWidths  
+        self.rightPadding = 0      
+        self.spaceBefore = 0
+        self.spaceAfter = 0
         self.tableData = list()
         self.tableStyleCommands = list()
         # for finalizing specific cell formats
@@ -308,9 +311,9 @@ class StyledTable(object):
         """
         if not self.tableData:
             self.tableData = [[""]]
-        return self.layoutTable(hTableAlignment=self.hTableAlignment, colWidths=self.colWidths)
+        return self.layoutTable()
 
-    def layoutTable(self, hTableAlignment=TA_LEFT, colWidths=None):
+    def layoutTable(self, hTableAlignment=None, colWidths=None):
         """
         Returns a table flowable with automatically estimated column width.
 
@@ -338,8 +341,8 @@ class StyledTable(object):
         table.setStyle(self.handleStyleCommands())
         if hTableAlignment is not None:
             table.hAlign = hTableAlignment
-        # elif self.hTableAlignment:
-        #     table.hAlign = self.hTableAlignment
+        else:
+            table.hAlign = self.hTableAlignment
         return table
 
     def layoutFullWidthTable(self, 
@@ -363,7 +366,7 @@ class StyledTable(object):
         frameWidth = frameInfo._aW - (frameInfo._x1 * 2.)  # -(frameInfo._leftPadding+frameInfo._rightPadding)
         #if self.reportType == "campaign" or self.reportType == "release":
         # NOTE remove workaround later ...
-        print(frameWidth, marginSide)
+        # print(frameWidth, marginSide)
         frameWidth *= (1.0 - marginSide/frameWidth)
         
         # prepare columnWidths so that they fit on frameWidth and obey ratios
@@ -385,9 +388,9 @@ class StyledTable(object):
         table.hAlign = hTableAlignment
         return table
 
-    def layoutStyledTable(self, hTableAlignment=TA_CENTER, colWidths=None,
-                          spaceBefore=None, spaceAfter=None, rightPadding=0
-                          ):
+    def layoutStyledTable(self, hTableAlignment=None, colWidths=None,
+                          spaceBefore=None, spaceAfter=None, rightPadding=0,
+                          pre=False):
         """
         Returns a table flowable with automatically estimated column width.
 
@@ -407,19 +410,26 @@ class StyledTable(object):
         # styledTable.fontsize = 10
 
         # general right padding in cells:
+        if rightPadding:
+            self.rightPadding = rightPadding
         self.addTableStyleCommand(
-            ('RIGHTPADDING', (0, 0), (-1, -1), rightPadding * cm))
+            ('RIGHTPADDING', (0, 0), (-1, -1), self.rightPadding * cm))
         # BUG: VALIGN does not work with different font sizes !!!
         # styledTable.addTableStyleCommand(
         #    ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'))
         # styledTable.addTableStyleCommand(
         #    ('SIZE', (0, 0), (-1, -1), styledTable.fontsize))
+        if hTableAlignment is not None:
+            self.hTableAlignment = hTableAlignment
 
         if colWidths is not None:
-            # repair here the leftTablePadding option and the fact that the table data is
-            # provided with an additional empty column at the left side
+            self.colWidths = colWidths
+        else:
+            colWidths = self.colWidths
+        # repair here the leftTablePadding option and the fact that the table data is
+        # provided with an additional empty column at the left side
+        if colWidths is not None:
             estColWidths = self.columnWidthEstim(self.tableData)
-            # print(estColWidths)
             if self.colsCount() > len(colWidths):
                 if isinstance(colWidths, tuple):
                     colWidths = list(colWidths)
@@ -427,19 +437,24 @@ class StyledTable(object):
             while -1 in colWidths:
                 i = colWidths.index(-1)
                 colWidths[i] = estColWidths[i] / cm
-            colWidths = [x * cm for x in colWidths]
+            colWidthsResult = [x * cm for x in colWidths]
+        else:
+            colWidthsResult = None
 
         if spaceBefore is not None:
-            spaceBefore *= cm
+            self.spaceBefore = spaceBefore
         if spaceAfter is not None:
-            spaceAfter *= cm
-        # print("COLW", colWidths)
-        table = Table(self.tableData, colWidths=colWidths,
-                         spaceBefore=spaceBefore, spaceAfter=spaceAfter)
-        tableStyle = self.handleStyleCommands()
-        table.setStyle(tableStyle)
-        table.hAlign = hTableAlignment
-        return table
+            self.spaceAfter = spaceAfter
+        if pre:
+            # NOTE returns the style table again
+            return self
+        else:
+            table = Table(self.tableData, colWidths=colWidthsResult,
+                            spaceBefore=self.spaceBefore * cm, spaceAfter=self.spaceAfter * cm)
+            tableStyle = self.handleStyleCommands()
+            table.setStyle(tableStyle)
+            table.hAlign = self.hTableAlignment
+            return table
 
     def columnWidthEstim(self, data):
         """
@@ -491,3 +506,70 @@ class StyledTable(object):
             return 100.
         else:
             raise (NotImplementedError(type(obj)))
+
+    def getTableHeight(self, frameInfo):
+        """
+        Returns height of table hint
+
+        :param table: the table object
+        :type table: Table
+        """
+        return self.as_flowable.wrap(frameInfo._aW, frameInfo._aH)[1]
+
+
+    def split_table(self, n):
+        """
+        """
+        table_copy_up = copy.deepcopy(self)
+        table_copy_down = copy.deepcopy(self)
+        table_copy_down.tableData = self.tableData[n:]
+        table_copy_down.tableData.insert(0, self.tableData[0])
+        table_copy_up.tableData = self.tableData[0:n]
+        return table_copy_up, table_copy_down
+
+
+    def split_table_iterative(self, frameInfo, availableHeight):
+        """
+        """
+        maxHeight = availableHeight - self.spaceBefore * cm - self.spaceAfter * cm
+        n = len(self.tableData) - 1
+        table_copy_up, table_copy_down = self.split_table(n)
+        while table_copy_up.getTableHeight(frameInfo) > maxHeight * 0.9:
+            n -= 1
+            if n >= 1:
+                table_copy_up, table_copy_down = self.split_table(n)
+            else:
+                break
+        table_copy_down.shift_background_styles(n-1)
+        table_copy_up.snip_background_styles(n)
+        return table_copy_up, table_copy_down
+
+    def shift_background_styles(self, n):
+        """
+        """
+        out_styles = []
+        tableStyleCommands = []
+        for command in self.tableStyleCommands:
+            if command[0] == "BACKGROUND":
+                new_command = list(command)
+                new_command[1][1] -= n
+                new_command[2][1] -= n
+                if new_command[1][1] > 0 and new_command[2][1]> 0:
+                    tableStyleCommands.append(new_command)
+            else:
+                tableStyleCommands.append(command)
+        self.tableStyleCommands = tableStyleCommands
+
+    def snip_background_styles(self, n):
+        """
+        """
+        out_styles = []
+        tableStyleCommands = []
+        for command in self.tableStyleCommands:
+            if command[0] == "BACKGROUND":
+                if command[1][1] < n and command[2][1] < n:
+                    tableStyleCommands.append(command)
+                    # print(new_command)
+            else:
+                tableStyleCommands.append(command)
+        self.tableStyleCommands = tableStyleCommands
