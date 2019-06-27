@@ -159,9 +159,9 @@ class Test_AutoBaseDoc(unittest.TestCase):
         # Begin of Documentation to Potable Document
         self.doc = ar.AutoDocTemplate(
             self.outname,
-            onFirstPage=drawFirstPage,
-            onLaterPages=drawLaterPage,
-            onLaterSPages=drawLaterLPage)
+            onFirstPage=(drawFirstPage, 1),
+            onLaterPages=(drawLaterPage, 1),
+            onLaterSPages=(drawLaterLPage, 1))
 
         self.styles = ar.Styles()
         self.styles.registerStyles()
@@ -174,7 +174,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         """
         self.buildDoc()
 
-    #@unittest.skip("simple test")
+    @unittest.skip("simple test")
     def test_buildThrough(self, testTemplate='LaterP'):
         """
         test run through story
@@ -237,6 +237,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         """
         para = ar.Paragraph(para, self.styles.title)
         self.contents.append(para)
+        outTemplate = self.doc.getTemplate(temp_name=outTemplate)
         ar.PageNext(self.contents, nextTemplate=outTemplate)
         self.contents.append(ar.PageBreak())
 
@@ -260,6 +261,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         # default style h1
         if sty is None:
             sty = self.styles.h1
+        nextTemplate = self.doc.getTemplate(temp_name=nextTemplate)
         ar.PageNext(self.contents, nextTemplate=nextTemplate)
         # Begin of First Chapter
         self.contents.append(ar.PageBreak())
