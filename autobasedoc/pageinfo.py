@@ -196,7 +196,7 @@ def addPlugin(canv, doc, frame=None, talkative=False):
                         print(text)
 
                 if pitem.typ.startswith("header"):
-                    print(text)
+                    #print(text)
                     #Header
                     posy = head_margin()
                     if pitem.text is not None:

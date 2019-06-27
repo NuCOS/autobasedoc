@@ -502,7 +502,7 @@ class AutoDocTemplate(BaseDocTemplate):
             orientation = temp_name
 
         for frame in pageTemplate.frames:
-            print(f(frame))
+            #print(f(frame))
             if f(frame).startswith(orientation):
                 return frame, pageTemplate.pagesize
 
@@ -538,7 +538,7 @@ class AutoDocTemplate(BaseDocTemplate):
             template = f(template)
 
         if template is None:
-            print(temp_id, last, as_name)
+            print(f"Error from {self.template_id}: temp_id:{temp_id}, last:{last}, as_name:{as_name}")
 
         return template
 
