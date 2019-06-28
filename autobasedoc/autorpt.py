@@ -10,16 +10,12 @@ from __future__ import print_function
 
 import os
 import sys
-
-from autobasedoc import is_python3
-import autobasedoc.autoplot as ap
-
+import random
+import string
 from hashlib import sha1
 from operator import attrgetter
 from itertools import count
 from collections import OrderedDict
-import random
-import string
 
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.lib.pagesizes import A4, landscape
@@ -38,10 +34,12 @@ from reportlab.platypus.flowables import SlowPageBreak, DDIndenter, PageBreakIfN
 from reportlab.pdfgen import canvas
 from reportlab.lib.styles import ParagraphStyle
 
-# Configure Fonts!
+# configure pdf producer
 from reportlab.pdfbase.pdfdoc import PDFInfo
 
+# module imports
 from autobasedoc import base_fonts, color_dict, colors
+import autobasedoc.autoplot as ap
 from autobasedoc.styledtable import StyledTable
 from autobasedoc.styles import StyleSheet, Styles
 from autobasedoc.pageinfo import addPlugin, PageInfo
@@ -1101,8 +1099,6 @@ def getBookmarkLast(contents):
 def getBaseFont(fonttype):
     if fonttype in base_fonts():
         return base_fonts()[fonttype]
-    else:
-        return None
 
 
 def doHeading(title, sty, outlineText=None, bookmarkFullpage=False):
