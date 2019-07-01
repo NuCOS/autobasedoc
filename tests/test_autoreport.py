@@ -8,7 +8,6 @@ import numpy as np
 import os
 import sys
 import unittest
-
 from faker import Faker
 
 __root__ = os.path.dirname(__file__)

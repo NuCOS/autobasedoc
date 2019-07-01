@@ -837,8 +837,15 @@ class AutoDocTemplate(BaseDocTemplate):
                 #print("spaceBesides:",frame._aW-f.drawWidth )
                 #print(f.drawHeight)
 
-                #try to fit it then draw it
-            if frame.add(f, canv, trySplit=self.allowSplitting):
+            #try to fit it then draw it
+            try:
+                fitable = frame.add(f, canv, trySplit=self.allowSplitting)
+            except:
+                # not a good solution: if add fails in any kind it is assumed to
+                # fit on the frame
+                fitable = True
+
+            if fitable:
                 if not isinstance(f, FrameActionFlowable):
                     self._curPageFlowableCount += 1
                     self.afterFlowable(f)
@@ -870,10 +877,13 @@ class AutoDocTemplate(BaseDocTemplate):
                         flowables[
                             0:0] = S  # put splitted flowables back on the list
                 else:
-                    if hasattr(f, '_postponed'):
-                        pass
-                        #print( f.__class__.__name__, self.frame.id, f.drawWidth, f.drawHeight, )
-
+                    #if hasattr(f, '_postponed'):
+                        #pass
+                        #print( f.__class__.__name__, self.frame.id )
+                        # not raising a LayoutError here alows us to
+                        # insert a page break instead of a frame break
+                        # by overloading wrap() and split()
+                        # see class AutoTableOfContents on how to do that
                         # ident = "Flowable %s%s too large on page %d in frame %r%s of template %r" % \
                         # (self._fIdent(f, 60, frame),
                         #  _fSizeString(f),
