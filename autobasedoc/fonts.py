@@ -1,9 +1,11 @@
 import os
+
+from autobasedoc import base_fonts
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.pdfmetrics import getFont
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.fonts import addMapping
-from autobasedoc import base_fonts
+
 
 def registerFont(faceName, afm, pfb):
     """

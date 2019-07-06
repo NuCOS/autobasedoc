@@ -10,16 +10,12 @@ from __future__ import print_function
 
 import os
 import sys
-
-from autobasedoc import is_python3
-import autobasedoc.autoplot as ap
-
+import random
+import string
 from hashlib import sha1
 from operator import attrgetter
 from itertools import count
 from collections import OrderedDict
-import random
-import string
 
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.lib.pagesizes import A4, landscape
@@ -38,10 +34,12 @@ from reportlab.platypus.flowables import SlowPageBreak, DDIndenter, PageBreakIfN
 from reportlab.pdfgen import canvas
 from reportlab.lib.styles import ParagraphStyle
 
-# Configure Fonts!
+# configure pdf producer
 from reportlab.pdfbase.pdfdoc import PDFInfo
 
+# module imports
 from autobasedoc import base_fonts, color_dict, colors
+import autobasedoc.autoplot as ap
 from autobasedoc.styledtable import StyledTable
 from autobasedoc.styles import StyleSheet, Styles
 from autobasedoc.pageinfo import addPlugin, PageInfo
@@ -83,6 +81,7 @@ def drawFirstPortrait(canv, doc):
 
     canv.restoreState()
 
+onFirstPage = drawFirstPortrait, 0
 
 def drawFirstLandscape(canv, doc):
     """
@@ -142,6 +141,7 @@ def drawLaterPortrait(canv, doc):
 
     canv.restoreState()
 
+onLaterPages = drawLaterPortrait, 0
 
 def drawLaterLandscape(canv, doc):
     """
@@ -839,8 +839,15 @@ class AutoDocTemplate(BaseDocTemplate):
                 #print("spaceBesides:",frame._aW-f.drawWidth )
                 #print(f.drawHeight)
 
-                #try to fit it then draw it
-            if frame.add(f, canv, trySplit=self.allowSplitting):
+            #try to fit it then draw it
+            try:
+                fitable = frame.add(f, canv, trySplit=self.allowSplitting)
+            except:
+                # not a good solution: if add fails in any kind it is assumed to
+                # fit on the frame
+                fitable = True
+
+            if fitable:
                 if not isinstance(f, FrameActionFlowable):
                     self._curPageFlowableCount += 1
                     self.afterFlowable(f)
@@ -872,10 +879,13 @@ class AutoDocTemplate(BaseDocTemplate):
                         flowables[
                             0:0] = S  # put splitted flowables back on the list
                 else:
-                    if hasattr(f, '_postponed'):
-                        pass
-                        #print( f.__class__.__name__, self.frame.id, f.drawWidth, f.drawHeight, )
-
+                    #if hasattr(f, '_postponed'):
+                        #pass
+                        #print( f.__class__.__name__, self.frame.id )
+                        # not raising a LayoutError here alows us to
+                        # insert a page break instead of a frame break
+                        # by overloading wrap() and split()
+                        # see class AutoTableOfContents on how to do that
                         # ident = "Flowable %s%s too large on page %d in frame %r%s of template %r" % \
                         # (self._fIdent(f, 60, frame),
                         #  _fSizeString(f),
@@ -1101,8 +1111,6 @@ def getBookmarkLast(contents):
 def getBaseFont(fonttype):
     if fonttype in base_fonts():
         return base_fonts()[fonttype]
-    else:
-        return None
 
 
 def doHeading(title, sty, outlineText=None, bookmarkFullpage=False):

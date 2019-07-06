@@ -1,3 +1,4 @@
+# place header and footer
 
 def addPlugin(canv, doc, frame=None, talkative=False):
     """
