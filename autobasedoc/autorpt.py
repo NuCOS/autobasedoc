@@ -81,6 +81,7 @@ def drawFirstPortrait(canv, doc):
 
     canv.restoreState()
 
+onFirstPage = drawFirstPortrait, 0
 
 def drawFirstLandscape(canv, doc):
     """
@@ -140,6 +141,7 @@ def drawLaterPortrait(canv, doc):
 
     canv.restoreState()
 
+onLaterPages = drawLaterPortrait, 0
 
 def drawLaterLandscape(canv, doc):
     """
