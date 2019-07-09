@@ -25,7 +25,7 @@ A usual working example for creating just a simple (empty) pdf file with a title
 
     import os
     outname = os.path.join(os.path.dirname(__file__), "MinimalExample.pdf")
-    doc = ar.AutoDocTemplate(outname,onFirstPage=ar.drawLaterPage,onLaterPages=ar.drawLaterPage,onLaterSPages=ar.drawLaterPage,
+    doc = ar.AutoDocTemplate(outname,onFirstPage=ar.onFirstPage,onLaterPages=ar.onLaterPages,onLaterSPages=ar.onLaterPages,
                             leftMargin=0.5*ar.cm, rightMargin=0.5*ar.cm, topMargin=0.5*ar.cm, bottomMargin=0.5*ar.cm)
 
     #  you always work with your styles object
