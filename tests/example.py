@@ -1,14 +1,19 @@
-import os#, sys
+import os
 from cycler import cycler
 
-#folder = "../../hub/autobasedoc/"
-#__root__ = os.path.dirname(__file__)
+try:
+    import autobasedoc
 
-#importpath = os.path.realpath(os.path.join(__root__, folder))
-#sys.path.append(importpath)
+except:
+    import sys
+    folder = "../../autobasedoc/"
+    __root__ = os.path.dirname(__file__)
 
-import autobasedoc.autorpt as ar
-import autobasedoc.autoplot as ap
+    importpath = os.path.realpath(os.path.join(__root__, folder))
+    sys.path.append(importpath)
+
+from autobasedoc import autorpt as ar
+from autobasedoc import autoplot as ap
 
 ar.setTtfFonts(
     'Calibri',

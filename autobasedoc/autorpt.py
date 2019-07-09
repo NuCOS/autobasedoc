@@ -82,6 +82,9 @@ def drawFirstPortrait(canv, doc):
     canv.restoreState()
 
 
+onFirstPage = drawFirstPortrait, 0
+
+
 def drawFirstLandscape(canv, doc):
     """
     This is the Template of any later drawn Landscape Oriented Page
@@ -140,6 +143,7 @@ def drawLaterPortrait(canv, doc):
 
     canv.restoreState()
 
+onLaterPages = drawLaterPortrait, 0
 
 def drawLaterLandscape(canv, doc):
     """

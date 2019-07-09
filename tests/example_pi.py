@@ -1,5 +1,17 @@
-import os, sys
+import os
 from cycler import cycler
+
+try:
+    import autobasedoc
+
+except:
+    import sys
+    folder = "../../autobasedoc/"
+    __root__ = os.path.dirname(__file__)
+
+    importpath = os.path.realpath(os.path.join(__root__, folder))
+    sys.path.append(importpath)
+
 
 import autobasedoc.autorpt as ar
 import autobasedoc.autoplot as ap
