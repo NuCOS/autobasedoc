@@ -13,15 +13,21 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
 import shlex
+
+import sys
+folder = "../../autobasedoc/"
+__root__ = os.path.dirname(__file__)
+
+importpath = os.path.realpath(os.path.join(__root__, folder))
+sys.path.append(importpath)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('../autobasedoc/'))
+#sys.path.insert(0, os.path.abspath('../autobasedoc/'))
 
 # -- General configuration ------------------------------------------------
 
@@ -91,7 +97,7 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'bizstyle'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -175,6 +181,3 @@ texinfo_documents = [
    author, 'autobasedoc', 'a pdf-report workflow automation module.',
    'Miscellaneous'),
 ]
-
-
-

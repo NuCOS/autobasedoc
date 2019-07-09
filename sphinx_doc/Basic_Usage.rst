@@ -5,7 +5,7 @@ Basic Usage
 
 .. sidebar:: Short
 
-    - There are actually two modules: *autoplot* and *autorpt* 
+    - There are actually two modules: *autoplot* and *autorpt*
     - The principle usage is shown in the tests and the example
 
 .. index:: Basic Usage
@@ -17,7 +17,7 @@ To work with the reportlab-toolbox you should import the following:
 
 .. code-block:: python
 
-    from autobasedoc import ar
+    from autobasedoc import autorpt as ar
 
 A usual working example for creating just a simple (empty) pdf file with a title-page and a table of contents would be:
 
@@ -55,7 +55,7 @@ To work with ttf-fonts and have the same font inside your matplotlib images and 
 .. code-block:: python
 
     import os  #  if you haven't, yet.
-    # we assume you have a fonts path 
+    # we assume you have a fonts path
     # (if you haven't you can use the calibri font we added to the module) ar.__font_dir__
     # the ap (autoplot) module provides helpful stuff for combining reportlab with matplotlib
     from autobasedoc import ap
@@ -115,4 +115,3 @@ You might then additionally wan't to use the same colors, that reportlab uses:
     plotColors = list(plotColorDict.values())
 
     ap.plt.rc('axes', prop_cycle=(cycler('color', plotColors)))
-
