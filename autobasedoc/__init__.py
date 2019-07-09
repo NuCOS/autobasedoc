@@ -2,7 +2,20 @@
 """
 Created on Wed Aug 26 11:40:26 2015
 
-@author: ecksjoh
+This package is a set of helper functions and classes around autorpt.AutoBaseDoc
+
+the two main modules provided by this package are:
+
+* autorpt   provides a Reportlab AutoBaseDoc, a Document Template Class derived from reportlab's BaseDocTemplate
+* autoplt   provides decorators for matplotlib functions to make them return pdf-image-flowables
+
+You should import the two modules directly::
+
+import autobasedoc.autorpt as ar
+import autobasedoc.autoplot as ap
+from autobasedoc.autorpt import base_fonts, addPlugin
+
+@author: oliver, johannes
 """
 import sys
 from .version import version

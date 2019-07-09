@@ -64,7 +64,7 @@ def reprFrame(frame):
     for key in sorted(list(_dict.keys())):
         print(key, ": ", _dict[key])
 
-# Here are some template files, you shoud define your own:
+# Here are some template files, you should define your own:
 
 def drawFirstPortrait(canv, doc):
     """
@@ -81,7 +81,6 @@ def drawFirstPortrait(canv, doc):
 
     canv.restoreState()
 
-onFirstPage = drawFirstPortrait, 0
 
 def drawFirstLandscape(canv, doc):
     """
@@ -141,7 +140,6 @@ def drawLaterPortrait(canv, doc):
 
     canv.restoreState()
 
-onLaterPages = drawLaterPortrait, 0
 
 def drawLaterLandscape(canv, doc):
     """
@@ -839,15 +837,8 @@ class AutoDocTemplate(BaseDocTemplate):
                 #print("spaceBesides:",frame._aW-f.drawWidth )
                 #print(f.drawHeight)
 
-            #try to fit it then draw it
-            try:
-                fitable = frame.add(f, canv, trySplit=self.allowSplitting)
-            except:
-                # not a good solution: if add fails in any kind it is assumed to
-                # fit on the frame
-                fitable = True
-
-            if fitable:
+                #try to fit it then draw it
+            if frame.add(f, canv, trySplit=self.allowSplitting):
                 if not isinstance(f, FrameActionFlowable):
                     self._curPageFlowableCount += 1
                     self.afterFlowable(f)
@@ -879,13 +870,10 @@ class AutoDocTemplate(BaseDocTemplate):
                         flowables[
                             0:0] = S  # put splitted flowables back on the list
                 else:
-                    #if hasattr(f, '_postponed'):
-                        #pass
-                        #print( f.__class__.__name__, self.frame.id )
-                        # not raising a LayoutError here alows us to
-                        # insert a page break instead of a frame break
-                        # by overloading wrap() and split()
-                        # see class AutoTableOfContents on how to do that
+                    if hasattr(f, '_postponed'):
+                        pass
+                        #print( f.__class__.__name__, self.frame.id, f.drawWidth, f.drawHeight, )
+
                         # ident = "Flowable %s%s too large on page %d in frame %r%s of template %r" % \
                         # (self._fIdent(f, 60, frame),
                         #  _fSizeString(f),
