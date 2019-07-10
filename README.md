@@ -1,7 +1,6 @@
 # autobasedoc
 > Automating documentation workflow using matplotlib figures and reportlab.
 
-![pypi](https://pypi.org/project/autobasedoc/)
 ![Documentation Status](https://readthedocs.org/projects/autobasedoc/badge/?version=latest)
 
 This package uses reportlab, svglib, matplotlib and pdfrw, and does not provide workflows on that basis, any customization on a specific workflow should be avoided here.
@@ -18,6 +17,8 @@ OS X & Linux & Windows:
 ```sh
 pip install autobasedoc
 ```
+
+_See the [PyPI][pypi] website._
 
 ## Usage example
 
@@ -50,3 +51,4 @@ you can start tests with nose2
 
 <!-- Markdown link & img dfn's -->
 [wiki]: https://github.com/NuCOS/autobasedoc/wiki
+[pypi](https://pypi.org/project/autobasedoc/)
