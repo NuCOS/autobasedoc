@@ -1,6 +1,8 @@
 # autobasedoc
 > Automating documentation workflow using matplotlib figures and reportlab.
 
+![Documentation Status](https://readthedocs.org/projects/autobasedoc/badge/?version=latest)](https://autobasedoc.readthedocs.io/en/latest/?badge=latest)
+
 This package uses reportlab, svglib, matplotlib and pdfrw, and does not provide workflows on that basis, any customization on a specific workflow should be avoided here.
 The open-source license of the corresponding packages can be obtained from the python package index.
 This package tries to be as small as possible making use of a minimum number of included modules.

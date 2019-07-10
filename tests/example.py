@@ -1,17 +1,21 @@
-import os
-from cycler import cycler
+"""
+example 1
+"""
 
 try:
     import autobasedoc
 
 except:
-    import sys
+    import os, sys
     folder = "../../autobasedoc/"
     __root__ = os.path.dirname(__file__)
 
     importpath = os.path.realpath(os.path.join(__root__, folder))
     sys.path.append(importpath)
 
+## Example prerequisites
+import os
+import cycler
 from autobasedoc import autorpt as ar
 from autobasedoc import autoplot as ap
 
@@ -85,7 +89,6 @@ content.append(toc)
 
 
 ## Example 1 adding a table
-##############################################
 content.append(ar.PageBreak())
 ar.addHeading("A Table", styles.h1, content)
 
@@ -99,7 +102,6 @@ data = [(1,2,3,4), (5,6,6,8)]
 content.append(ar.Table(data, style=None, spaceBefore=10))
 
 ## Example 2 adding matplotlib plot
-##############################################
 content.append(ar.PageBreak())
 ar.addHeading("A simple Image", styles.h1, content)
 content.append(ar.Paragraph("Pictures are to be placed here.",styles.normal))
@@ -137,7 +139,6 @@ para = ar.Paragraph(" ".join((u"Fig.",str(doc.figcounter()),title)), styles.capt
 content.append(para)
 
 ## Example 3 adding matplotlib plot and legend
-##############################################
 content.append(ar.PageBreak())
 ar.addHeading("An Image with Legend", styles.h1, content)
 content.append(ar.Paragraph("Pictures are to be placed here.",styles.normal))
@@ -177,5 +178,7 @@ content.append(leg)
 content.append(img)
 para = ar.Paragraph(" ".join((u"Fig.",str(doc.figcounter()),title)), styles.caption)
 content.append(para)
+
+## Finally
 
 doc.multiBuild(content)
