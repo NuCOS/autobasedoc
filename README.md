@@ -51,4 +51,4 @@ you can start tests with nose2
 
 <!-- Markdown link & img dfn's -->
 [wiki]: https://github.com/NuCOS/autobasedoc/wiki
-[pypi](https://pypi.org/project/autobasedoc/)
+[pypi]: https://pypi.org/project/autobasedoc/
