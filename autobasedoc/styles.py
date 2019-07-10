@@ -1,3 +1,13 @@
+"""
+styles
+======
+
+.. module:: styles
+   :platform: Unix, Windows
+   :synopsis: predefined styles for easy configuration
+
+.. moduleauthor:: Johannes Eckstein
+"""
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER, TA_RIGHT
 from autobasedoc import base_fonts

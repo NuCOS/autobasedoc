@@ -1,5 +1,5 @@
 """
-example 1
+basic examples
 """
 
 try:

@@ -1,3 +1,13 @@
+"""
+styledtable
+===========
+
+.. module:: styledtable
+   :platform: Unix, Windows
+   :synopsis: a layouted table
+
+.. moduleauthor:: Oliver Braun
+"""
 import random
 import string
 import copy
@@ -96,8 +106,8 @@ class StyledTable(object):
         :type leftTablePadding: int
         """
         self.hTableAlignment = hTableAlignment or TA_CENTER
-        self.colWidths = colWidths  
-        self.rightPadding = 0      
+        self.colWidths = colWidths
+        self.rightPadding = 0
         self.spaceBefore = 0
         self.spaceAfter = 0
         self.tableData = list()
@@ -345,8 +355,8 @@ class StyledTable(object):
             table.hAlign = self.hTableAlignment
         return table
 
-    def layoutFullWidthTable(self, 
-                             frameInfo, 
+    def layoutFullWidthTable(self,
+                             frameInfo,
                              hTableAlignment=TA_CENTER,
                              marginSide=1.8*cm,
                              ratios=[0.3, 0.4, 0.3]):
@@ -368,7 +378,7 @@ class StyledTable(object):
         # NOTE remove workaround later ...
         # print(frameWidth, marginSide)
         frameWidth *= (1.0 - marginSide/frameWidth)
-        
+
         # prepare columnWidths so that they fit on frameWidth and obey ratios
         if sum(ratios) == 1.:
             expectedWidths = [r * frameWidth for r in ratios]

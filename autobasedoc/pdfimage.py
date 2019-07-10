@@ -1,15 +1,22 @@
 ﻿"""
-Images as Flowables
+pdfimage
+========
 
-Pdf and Svg Images can be embedded from file, 
+.. module:: pdfimage
+   :platform: Unix, Windows
+   :synopsis: Images as Flowables
+
+.. moduleauthor:: Johannes Eckstein
+
+Pdf and Svg Images can be embedded from file,
 matplotlib drawings can be embedded as file-like objects
 and behave like a Flowable.
 
-SVG images can currently only be returned as a Drawing:
+SVG images can currently only be returned as a Drawing::
 
-from reportlab.graphics.shapes import Drawing
+    from reportlab.graphics.shapes import Drawing
 
-reportlab.lib.utils.ImageReader
+    reportlab.lib.utils.ImageReader
 
 """
 
@@ -31,14 +38,14 @@ def form_xo_reader(imgdata):
 
 def getSvg(path):
     """
-    return reportlab.graphics.shapes.Drawing() object 
+    return `reportlab.graphics.shapes.Drawing()` object
     with the contents of the SVG specified by path
     """
     return svg2rlg(path)
 
 def scaleDrawing(drawing,factor,showBoundary=False):
     """
-    scale a reportlab.graphics.shapes.Drawing() object, 
+    scale a reportlab.graphics.shapes.Drawing() object,
     leaving its aspect ratio unchanged
     """
     sx=sy=factor
@@ -46,17 +53,17 @@ def scaleDrawing(drawing,factor,showBoundary=False):
     drawing.scale(sx,sy)
     if showBoundary:
         drawing._showBoundary = True
-    
+
     return drawing
-    
+
 def getScaledSvg(path,factor):
     """
     get a scaled svg image from file
     """
     drawing = getSvg(path)
-    
+
     return scaleDrawing(drawing,factor)
-    
+
 class PdfImage(Flowable):
     """
     PdfImage wraps the first page from a PDF file as a Flowable
@@ -64,18 +71,18 @@ class PdfImage(Flowable):
     Based on the vectorpdf extension in rst2pdf (http://code.google.com/p/rst2pdf/)
 
     This can be used from the place where you want to return your matplotlib image
-    as a Flowable:
-        
+    as a Flowable::
+
         img = BytesIO()
-        
+
         fig, ax = plt.subplots(figsize=(canvaswidth,canvaswidth))
-        
+
         ax.plot([1,2,3],[6,5,4],antialiased=True,linewidth=2,color='red',label='a curve')
-        
+
         fig.savefig(img,format='PDF')
-        
+
         return(PdfImage(img))
-        
+
     """
 
     def __init__(self, filename_or_object, width=None, height=None, kind='direct'):
@@ -108,7 +115,7 @@ class PdfImage(Flowable):
         """
         returns draw- width and height
 
-        convenience function to adapt your image 
+        convenience function to adapt your image
         to the available Space that is available
         """
         return self.drawWidth, self.drawHeight
@@ -140,12 +147,12 @@ class PdfImage(Flowable):
         canv.scale(xscale, yscale)
         canv.doForm(xobj_name)
         canv.restoreState()
-        
+
 class PdfAsset(Flowable):
     """
     read in the first page of a PDF file from file
-    
-    it can e used like a reportlab.platypus.Flowable()
+
+    it can e used like a `reportlab.platypus.Flowable()`
     """
     def __init__(self,fname,width=None,height=None,kind='direct'):
 

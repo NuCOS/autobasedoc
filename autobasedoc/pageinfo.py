@@ -1,4 +1,14 @@
-# place header and footer
+"""
+pageinfo
+========
+
+.. module:: pageinfo
+   :platform: Unix, Windows
+   :synopsis: place header and footer
+
+.. moduleauthor:: Johannes Eckstein
+
+"""
 
 def addPlugin(canv, doc, frame=None, talkative=False):
     """

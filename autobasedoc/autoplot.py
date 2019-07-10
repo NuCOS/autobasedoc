@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep 16 11:11:12 2015
+autoplot
+========
 
-@author: johannes
+.. module:: autoplot
+   :platform: Unix, Windows
+   :synopsis: decorator to wrap around matplotlib plot functions into flowables
+
+.. moduleauthor:: Johannes Eckstein
+
+Created on Wed Sep 16 11:11:12 2015
 """
 from __future__ import print_function
 from __future__ import unicode_literals

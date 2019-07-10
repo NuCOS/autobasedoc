@@ -1,6 +1,12 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Jun 17 16:45:06 2013
+autorpt
+=======
+
+.. module:: autorpt
+   :platform: Unix, Windows
+   :synopsis: document templates for automatic document generation
+
+.. moduleauthor:: Johannes Eckstein
 
 Class AutoDocTemplate customized for automatic document creation
 this inherits and partly redefines reportlab code
@@ -81,10 +87,6 @@ def drawFirstPortrait(canv, doc):
 
     canv.restoreState()
 
-
-onFirstPage = drawFirstPortrait, 0
-
-
 def drawFirstLandscape(canv, doc):
     """
     This is the Template of any later drawn Landscape Oriented Page
@@ -126,6 +128,7 @@ def drawFirstLandscape(canv, doc):
 
     canv.restoreState()
 
+onFirstPage = drawFirstPortrait, 0
 
 def drawLaterPortrait(canv, doc):
     """
@@ -142,8 +145,6 @@ def drawLaterPortrait(canv, doc):
     addPlugin(canv, doc, frame="Later")
 
     canv.restoreState()
-
-onLaterPages = drawLaterPortrait, 0
 
 def drawLaterLandscape(canv, doc):
     """
@@ -163,6 +164,8 @@ def drawLaterLandscape(canv, doc):
 
     canv.restoreState()
 
+onLaterPages = drawLaterPortrait, 0
+
 def drawLaterSpecialPortrait(canv, doc):
     """
     This is the Template of any following Portrait Oriented Page
@@ -178,7 +181,6 @@ def drawLaterSpecialPortrait(canv, doc):
     addPlugin(canv, doc, frame="Later")
 
     canv.restoreState()
-
 
 def drawLaterSpecialLandscape(canv, doc):
     """
@@ -197,6 +199,8 @@ def drawLaterSpecialLandscape(canv, doc):
     addPlugin(canv, doc, frame="Later")
 
     canv.restoreState()
+
+onLaterSPages = drawLaterSpecialLandscape, 0
 
 class AutoDocTemplate(BaseDocTemplate):
     """
@@ -219,9 +223,9 @@ class AutoDocTemplate(BaseDocTemplate):
 
     To define Template settings for your pages you can use three stages, override the default values::
 
-        onFirstPage=_doNothing
-        onLaterPages=_doNothing
-        onLaterSPages=_doNothing
+        onFirstPage=(_doNothing, 0)
+        onLaterPages=(_doNothing, 0)
+        onLaterSPages=(_doNothing, 0)
 
     The stages are:
 
@@ -229,17 +233,21 @@ class AutoDocTemplate(BaseDocTemplate):
     - `onLaterPages` template of any following page
     - `onLaterSPages` template on any later switchable special page
 
+    Instead of `_doNothing`, a function that just carries a pass, you can define your own function that can draw something on the canvas before anything else gets drawn.
+    For the most common cases there are the following 'template' functions:
+
+    - :func:`drawFirstPortrait`
+    - :func:`drawFirstLandscape`
+    - :func:`drawLaterPortrait`
+    - :func:`drawLaterLandscape`
+    - :func:`drawLaterSpecialPortrait`
+    - :func:`drawLaterSpecialLandscape`
+
     To define a scheme, where all pages are Portrait but special pages are landscape pages::
 
-        onFirstPage=drawFirstPortrait
-        onLaterPages=drawLaterPortrait
-        onLaterSPages=drawLaterSpecialPortrait
-
-    To define a scheme, where all pages are Portrait/Landscape and there are no special pages::
-
-        onFirstPage=drawFirstPortrait/drawFirstLandscape
-        onLaterPages=drawLaterPortrait/drawLaterLandscape
-        onLaterSPages=_doNothing
+        onFirstPage=onFirstPage
+        onLaterPages=onLaterPages
+        onLaterSPages=onLaterSPages
 
     """
 
@@ -285,16 +293,6 @@ class AutoDocTemplate(BaseDocTemplate):
 
         #Frame(self.leftMargin, self.bottomMargin, self.width, self.height, id='F1')
 
-        """
-        Here we populate our page templates
-        Page templates are separated into three stages:
-
-        - on first page
-        - on later page
-        - on later special page
-
-        """
-
         # can be Landscape or Portrait
         self.onFirstPage, self.framesFirst = onFirstPage
         # Later Portrait or Landscape
@@ -329,7 +327,12 @@ class AutoDocTemplate(BaseDocTemplate):
 
     def templates_maker(self):
         """
-        register page templates and functions
+        Here we populate the page templates (register page templates and functions)
+        Page templates are separated into three stages:
+
+        - on first page
+        - on later page
+        - on later special page
 
         using a list, that simplified looks like this::
 
@@ -343,7 +346,7 @@ class AutoDocTemplate(BaseDocTemplate):
                           pagesize=self.pagesize),
              PageTemplate(id='Special',
                           frames=[specialFrame0, specialFrame1, specialFrame2],
-                          onPage=onLaterPages,
+                          onPage=onLaterSPages,
                           pagesize=self.pagesize)])
 
         the list is sent to::
@@ -360,8 +363,8 @@ class AutoDocTemplate(BaseDocTemplate):
         to controll switching on the next page template use
         self.PageNext e.g::
 
-                nextTemplate = self.doc.getSpecialTemplate(temp_name="")
-                ar.PageNext(self.contents, nextTemplate=nextTemplate)
+            nextTemplate = self.doc.getSpecialTemplate(temp_name="")
+            ar.PageNext(self.contents, nextTemplate=nextTemplate)
 
         """
         template_name = lambda x: attrgetter("__name__")(x).strip("draw")

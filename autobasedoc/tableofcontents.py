@@ -1,3 +1,14 @@
+"""
+tableofcontents
+===============
+
+.. module:: tableofcontents
+   :platform: Unix, Windows
+   :synopsis: a tableofcontents that breaks not to the next frame but to the next page
+
+.. moduleauthor:: Johannes Eckstein
+
+"""
 from reportlab import rl_config
 from reportlab.platypus import Table, Paragraph, PageBreak
 from reportlab.platypus.tableofcontents import TableOfContents, drawPageNumbers

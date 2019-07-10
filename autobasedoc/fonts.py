@@ -1,3 +1,15 @@
+"""
+fonts
+=====
+
+.. module:: fonts
+   :platform: Unix, Windows
+   :synopsis: font utils
+
+.. moduleauthor:: Johannes Eckstein
+
+"""
+
 import os
 
 from autobasedoc import base_fonts

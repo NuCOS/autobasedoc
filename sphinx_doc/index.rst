@@ -26,7 +26,32 @@ Welcome to autobasedoc's documentation!
     :undoc-members:
     :show-inheritance:
 
+.. automodule:: autobasedoc.pageinfo
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: autobasedoc.fonts
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: autobasedoc.pdfimage
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: autobasedoc.styledtable
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: autobasedoc.styles
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: autobasedoc.tableofcontents
     :members:
     :undoc-members:
     :show-inheritance:
