@@ -12,16 +12,17 @@ fi
 echo "----------------------------------------------------"
 {
 conda update -n base -c defaults conda
-conda create --name $PACKAGE'3_6' python=3.6 -y
-source activate $PACKAGE'3_6'
-} || { 
+conda create --name $PACKAGE'3_7' python=3.7 -y
+source activate $PACKAGE'3_7'
+} || {
 virtualenv -p $(which python3) $VENV/py3
-source $VENV/py3/bin/activate 
+source $VENV/py3/bin/activate
 }
 pip install --upgrade pip
 pip install nose2
 pip install numpy
 pip install matplotlib
+pip install faker
 python setup.py sdist
 
 ###################################
@@ -48,4 +49,3 @@ sleep 3
 conda deactivate
 echo "after deactivate"
 python info.py
-

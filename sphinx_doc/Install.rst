@@ -41,9 +41,9 @@ I prefer miniconda but the package does not exist for conda, yet:
 Python Compatibility
 --------------------
 
-The module is compatible with Python 3.4/3.5/3.6 It should also work in any other Python Version but not yet tested.
+The module is compatible with Python 3.4+, currently Python 3.7.3, we do not support older Python 2.7+ anymore.
 
 Platforms
 ---------
 
-The module is platform independent. Up to now it is tested on linux (ubuntu). Other platforms will follow (at lease Windows 10 should always work).
+The module is platform independent. Up to now it is tested on linux (ubuntu). Other platforms will follow (at least Windows 10 should work).
