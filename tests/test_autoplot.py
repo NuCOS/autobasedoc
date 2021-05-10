@@ -174,7 +174,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
         """
         self.buildDoc()
 
-    @unittest.skip("simple test")
+    # @unittest.skip("simple test")
     def test_buildThrough(self, testTemplate='LaterP'):
         """
         test run through story
