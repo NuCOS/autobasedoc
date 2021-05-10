@@ -37,7 +37,7 @@ from matplotlib.ticker import LinearLocator, MultipleLocator, AutoMinorLocator, 
 import matplotlib.font_manager as fm
 from matplotlib.font_manager import findfont
 from matplotlib import ft2font
-from matplotlib.font_manager import createFontList, ttfFontProperty
+from matplotlib.font_manager import ttfFontProperty
 
 from autobasedoc.pdfimage import PdfImage, PdfAsset, getScaledSvg
 
