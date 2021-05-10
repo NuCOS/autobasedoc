@@ -1,0 +1,47 @@
+{
+  "spacer": {
+    "code": "create_vertical_spacer",
+    "arguments": {"height": null}
+  },
+  "spacer_bottom": {
+    "code": "create_vertical_spacer",
+    "arguments": {"height": null}
+  },
+  "title": {
+    "code": "create_paragraph",
+    "arguments": {"bookmark": null, "bookmarlevel": 0, "text": "", "fontsize": 12}
+  },
+  "bookmark": {
+    "code": "create_bookmark",
+    "arguments": {"text": null, "level": 0}
+  },
+  "table_title": {
+    "code": "create_table",
+    "arguments": {"body": null, "header": null, "colWidths": [8,8], "hTableAlignment": "CENTER", "withHLines": true}
+  },
+  "figure": {
+    "code": "create_figure",
+    "arguments": {"xx": null, "yy": null, "width": 8, "hAlign": "CENTER"}
+  },
+  "table_standard": {
+    "code": "create_table",
+    "arguments": {"body": null, "header": null, "width": null, "hTableAlignment": null, "withHLines": false, "gridded": false}
+  },
+  "table_info": {
+    "code": "create_info_table",
+    "arguments": {"left_flow": null, "right_flow": null},
+    "elements": {"left_flow": "table_standard", "right_flow": "image"}
+  },
+  "image": {
+    "code": "create_image",
+    "arguments": {"url": null}
+  },
+  "standard_header": {
+    "code": "create_header",
+    "arguments": {"headerText": null, "rightHeaderLines": null, "logoUrl": null}
+  },
+  "standard_footer": {
+    "code": "create_footer",
+    "arguments": {"footerLines": null, "footerUrls": null}
+  }
+}

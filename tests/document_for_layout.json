@@ -1,0 +1,72 @@
+{
+  "layout": "layout.json",
+  "orientation": "landscape",
+  "vars": {"LOGO": "grafics/GA.svg", "USER": "grafics/Benutzer.svg",  "CAL": "grafics/Kalender.svg",
+           "FN": "grafics/Dateiname.svg" },
+  "standard_header": {
+    "rightHeaderLines": [["top"], ["middle"], ["bottom"]],
+    "headerText": [["", "MAIN TITLE", ""]],
+    "logoUrl": "$LOGO"
+  },
+  "standard_footer": {
+    "footerText": [["left", "left middle", "right middle", "right"]],
+    "footerUrls": ["$USER", "$CAL", "", "$FN"]
+  },
+
+  "pages": [
+    {
+      "framestyle": "single",
+      "bookmark": {"text": "Main", "level": 0},
+      "content": {
+          "center": {
+            "spacer": { "height": 5 },
+            "table_title": { "body": [["Title", "Title"], ["Subtitle", "Subtitle"], ["Datum", "Datum"]] }
+         }
+      }
+    },
+    {
+        "framestyle": "double",
+        "bookmark": {"text": "Second", "level": 0},
+        "content": { 
+          "left": {
+            "spacer": { "height": 4 },
+            "figure": { "xx": [2.0, 3.0, 4.0, 5.0], "yy": [2.0, 3.0, 4.0, 5.0], "title": "HIHI", "legend": "testest" },
+            "spacer_bottom": { "height": 0.8 },
+            "table_standard": {
+                "body": [["figure_left", "figure_right"]],
+                "colWidths": [4,4]
+            }
+            },
+          "right": {
+            "spacer": { "height": 4 },
+            "table_standard": {
+                "body": [["left_single", "middle", "right_single"]],
+                "width": 7,
+                "colWidths": [2,1,2],
+                "gridded": true
+            }
+          }
+        }
+    },
+    {
+      "framestyle": "single",
+      "bookmark": {"text": "Second", "level": 0},
+      "content": {
+        "center": {
+            "spacer": { "height": 5 },
+            "table_info": {
+                "left_flow": {
+                    "table_standard": {
+                        "body": [["info_left", "info_right"]],
+                        "width": 8}
+                },
+                "right_flow": {
+                    "image": {"url": "grafics/out.pdf", "width": 4, "height": 4}
+                }
+            }
+         }
+      }
+    }
+  ]
+}
+
