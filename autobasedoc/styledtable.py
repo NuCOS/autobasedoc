@@ -188,6 +188,12 @@ class StyledTable(object):
         if isinstance(cmd, tuple):
             self.tableStyleCommands.append(cmd)
 
+    def sign(self, x):
+        if x >= 0:
+            return 1
+        else:
+            return -1
+
     def setTableData(self, data):
         """
         Overwrites the table data with fresh new data.
@@ -400,7 +406,7 @@ class StyledTable(object):
 
     def layoutStyledTable(self, hTableAlignment=None, colWidths=None,
                           spaceBefore=None, spaceAfter=None, rightPadding=0,
-                          pre=False):
+                          pre=False, factor=1):
         """
         Returns a table flowable with automatically estimated column width.
 
@@ -443,10 +449,14 @@ class StyledTable(object):
             if self.colsCount() > len(colWidths):
                 if isinstance(colWidths, tuple):
                     colWidths = list(colWidths)
-                colWidths.insert(0, estColWidths[0])
-            while -1 in colWidths:
-                i = colWidths.index(-1)
-                colWidths[i] = estColWidths[i] / cm
+                colWidths.insert(0, estColWidths[0] * factor)
+            colWidths_signum = [self.sign(x) for x in colWidths]
+            while -1 in colWidths_signum:
+                # NOTE this allows a cell stretch on top of estimated cell width
+                # [-1.2, -1.05 ... ]
+                i = colWidths_signum.index(-1)
+                colWidths_signum[i] = 1
+                colWidths[i] = -1.0 * factor * colWidths[i] * estColWidths[i] / cm
             colWidthsResult = [x * cm for x in colWidths]
         else:
             colWidthsResult = None
