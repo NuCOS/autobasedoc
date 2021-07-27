@@ -290,7 +290,7 @@ class StyledTable(object):
         cmd = ('FONT', (self.offsetCol, 0),
                (-1, 0), base_fonts()[fonttype])
         self.tableStyleCommands.append(cmd)
-        self.addDoubleLine()
+        self.addDoubleLine(color=color)
 
     def linesCount(self):
         """
