@@ -14,7 +14,7 @@ import copy
 from reportlab.platypus import TableStyle, Table, Flowable
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.lib.units import inch, cm, mm
-from autobasedoc import base_fonts, colors
+from autobasedoc import base_fonts, color_dict
 from collections import OrderedDict, defaultdict
 from autobasedoc.fonts import getFont
 
@@ -232,7 +232,7 @@ class StyledTable(object):
         """
         if offsetCol is None:
             offsetCol = self.offsetCol
-        color = getattr(colors, color)
+        color = color_dict().get(color)
         for ri in range(self.headerRow, self.linesCount()):
             if ri in exclude:
                 continue
@@ -264,9 +264,8 @@ class StyledTable(object):
         :param color: the color of the horizontal line
         :type color: str
         """
-        color = getattr(colors, color)
         self.addTableStyleCommand(
-            ("LINEAFTER", (col + self.offsetCol, 0), (col + self.offsetCol, -1), 0.4, color))
+            ("LINEAFTER", (col + self.offsetCol, 0), (col + self.offsetCol, -1), 0.4, color_dict().get(color)))
 
     def addTableHeader(self, line, fonttype="bold", color="blue"):
         """
@@ -280,7 +279,6 @@ class StyledTable(object):
         :type color: str
         """
         self.headerRow = 1
-        color = getattr(colors, color)
         line = copy.copy(line)
         if isinstance(line, tuple):
             line = list(line)
@@ -290,7 +288,7 @@ class StyledTable(object):
         cmd = ('FONT', (self.offsetCol, 0),
                (-1, 0), base_fonts()[fonttype])
         self.tableStyleCommands.append(cmd)
-        self.addDoubleLine(color=color)
+        self.addDoubleLine(color=color_dict().get(color))
 
     def linesCount(self):
         """
