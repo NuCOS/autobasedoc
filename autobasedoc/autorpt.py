@@ -122,7 +122,7 @@ def drawFirstLandscape(canv, doc):
     frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
-    canv.setFont(base_fonts()["normal"], doc.fontSize)
+    canv.setFont(base_fonts().get("normal"), doc.fontSize)
 
     addPlugin(canv, doc, frame="First")
 
@@ -140,7 +140,7 @@ def drawLaterPortrait(canv, doc):
     frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
-    canv.setFont(base_fonts()["normal"], doc.fontSize)
+    canv.setFont(base_fonts().get("normal"), doc.fontSize)
 
     addPlugin(canv, doc, frame="Later")
 
@@ -158,7 +158,7 @@ def drawLaterLandscape(canv, doc):
     frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
-    canv.setFont(base_fonts()["normal"], doc.fontSize)
+    canv.setFont(base_fonts().get("normal"), doc.fontSize)
 
     addPlugin(canv, doc, frame="Later")
 
@@ -176,7 +176,7 @@ def drawLaterSpecialPortrait(canv, doc):
     frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
-    canv.setFont(base_fonts()["normal"], doc.fontSize)
+    canv.setFont(base_fonts().get("normal"), doc.fontSize)
 
     addPlugin(canv, doc, frame="Later")
 
@@ -194,7 +194,7 @@ def drawLaterSpecialLandscape(canv, doc):
     frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
-    canv.setFont(base_fonts()["normal"], doc.fontSize)
+    canv.setFont(base_fonts().get("normal"), doc.fontSize)
 
     addPlugin(canv, doc, frame="Later")
 
