@@ -237,8 +237,8 @@ class Test_AutoBaseDoc(unittest.TestCase):
         """
         para = ar.Paragraph(para, self.styles.title)
         self.contents.append(para)
-        outTemplate = self.doc.getTemplate(temp_name=outTemplate)
-        ar.PageNext(self.contents, nextTemplate=outTemplate)
+        #outTemplate = self.doc.getTemplate(temp_name=outTemplate)
+        #ar.PageNext(self.contents, nextTemplate=outTemplate)
         self.contents.append(ar.PageBreak())
 
     #@unittest.skip("add toc")
@@ -261,8 +261,8 @@ class Test_AutoBaseDoc(unittest.TestCase):
         # default style h1
         if sty is None:
             sty = self.styles.h1
-        nextTemplate = self.doc.getTemplate(temp_name=nextTemplate)
-        ar.PageNext(self.contents, nextTemplate=nextTemplate)
+        #nextTemplate = self.doc.getTemplate(temp_name=nextTemplate)
+        #ar.PageNext(self.contents, nextTemplate=nextTemplate)
         # Begin of First Chapter
         self.contents.append(ar.PageBreak())
         part = ar.doHeading(para, sty)

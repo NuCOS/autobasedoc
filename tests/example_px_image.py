@@ -19,6 +19,8 @@ from cycler import cycler
 from autobasedoc import autorpt as ar
 from autobasedoc import autoplot as ap
 
+from autobasedoc.pdfimage import convert_px_to_pdf_image_obj, PdfImage
+
 ar.setTtfFonts(
     'Calibri',
     os.path.realpath(ar.__font_dir__),
@@ -47,6 +49,8 @@ ap.plt.rc('axes', prop_cycle=(cycler('color', plotColors)))
 fpath = os.path.join(ar.__font_dir__, 'calibri.ttf')
 font = ap.ft2font.FT2Font(fpath)
 ap.fontprop = ap.ttfFontProperty(font)
+
+img_path = "grafics/color_logo.png"
 
 fontprop = ap.fm.FontProperties(
     family='sans-serif',
@@ -97,87 +101,11 @@ content.append(para)
 
 content.append(ar.Paragraph("Table is here.",styles.caption))
 
-data = [(1,2,3,4), (5,6,6,8)]
+image_pdf = PdfImage(convert_px_to_pdf_image_obj(img_path),width=1*ar.cm,height=1*ar.cm)
+
+data = [(image_pdf,2,3,4),]
 
 content.append(ar.Table(data, style=None, spaceBefore=10))
-
-## Example 2 adding matplotlib plot
-content.append(ar.PageBreak())
-ar.addHeading("A simple Image", styles.h1, content)
-content.append(ar.Paragraph("Pictures are to be placed here.",styles.normal))
-
-title = "My simple plot"
-
-@ap.autoPdfImg
-def my_plot1(canvaswidth=5): #[inch]
-    fig, ax = ap.plt.subplots(figsize=(canvaswidth,canvaswidth))
-    fig.suptitle(title, fontproperties=fontprop)
-    x=[1,2,3,4,5,6,7,8]
-    y=[1,6,8,3,9,3,4,2]
-    ax.plot(x,y,label="legendlabel")
-    nrow, ncol = 1, 1
-    handles, labels = ax.get_legend_handles_labels()
-
-    leg_fig = ap.plt.figure(figsize=(canvaswidth, 0.2*nrow))
-
-    ax.legend(handles, labels, #labels = tuple(bar_names)
-            ncol=ncol, mode=None,
-            borderaxespad=0.,
-            loc='best',        # the location of the legend handles
-            handleheight=None,   # the height of the legend handles
-            #fontsize=9,         # prop beats fontsize
-            markerscale=None,
-            #frameon=False,
-            prop=fontprop,
-            fancybox=True
-            )
-
-    return fig
-
-content.append(my_plot1())
-para = ar.Paragraph(" ".join((u"Fig.",str(doc.figcounter()),title)), styles.caption)
-content.append(para)
-
-## Example 3 adding matplotlib plot and legend
-content.append(ar.PageBreak())
-ar.addHeading("An Image with Legend", styles.h1, content)
-content.append(ar.Paragraph("Pictures are to be placed here.",styles.normal))
-
-title = "My plot with a separate legend"
-
-@ap.autoPdfImage
-def my_plot2(canvaswidth=5): #[inch]
-    fig, ax = ap.plt.subplots(figsize=(canvaswidth,canvaswidth))
-    fig.suptitle(title,fontproperties=fontprop)
-    x=[1,2,3,4,5,6,7,8]
-    y=[1,6,8,3,9,3,4,2]
-    ax.plot(x,y,label="legendlabel")
-    nrow, ncol = 1, 1
-    handles, labels = ax.get_legend_handles_labels()
-
-    leg_fig = ap.plt.figure(figsize=(canvaswidth, 0.2*nrow))
-
-    leg = leg_fig.legend(handles, labels, #labels = tuple(bar_names)
-            ncol=ncol,
-            mode=None,
-            borderaxespad=0.,
-            loc='center',        # the location of the legend handles
-            handleheight=None,   # the height of the legend handles
-            #fontsize=9,         # prop beats fontsize
-            markerscale=None,
-            frameon=False,
-            prop=fontprop
-            #fancybox=True,
-            )
-
-    return fig,leg_fig,leg
-
-img, leg = my_plot2()
-
-content.append(leg)
-content.append(img)
-para = ar.Paragraph(" ".join((u"Fig.",str(doc.figcounter()),title)), styles.caption)
-content.append(para)
 
 ## Finally
 

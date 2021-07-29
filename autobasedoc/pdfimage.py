@@ -19,6 +19,7 @@ SVG images can currently only be returned as a Drawing::
     reportlab.lib.utils.ImageReader
 
 """
+from io import BytesIO, open
 
 from reportlab.platypus import Image, Flowable
 from reportlab.lib.units import inch,cm,mm
@@ -31,6 +32,15 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT,TA_CENTER,TA_RIGHT
 
 from svglib.svglib import svg2rlg
+
+import img2pdf
+
+def convert_px_to_pdf_image_obj(img_path):
+    """
+    convert png image to pdf byte object
+    output can be passed to PdfImage
+    """
+    return BytesIO(img2pdf.convert(img_path))
 
 def form_xo_reader(imgdata):
     page, = PdfReader(imgdata).pages

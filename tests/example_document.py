@@ -1,3 +1,16 @@
+try:
+    import autobasedoc
+
+except:
+    import os, sys
+    folder = "../../autobasedoc/"
+    __root__ = os.path.dirname(__file__)
+
+    importpath = os.path.realpath(os.path.join(__root__, folder))
+    sys.path.append(importpath)
+
+
+
 import copy
 from flowables import create_figure, create_table, create_vertical_spacer
 from flowables import create_header, create_footer, create_image
