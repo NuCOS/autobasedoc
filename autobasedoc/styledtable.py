@@ -14,7 +14,7 @@ import copy
 from reportlab.platypus import TableStyle, Table, Flowable
 from reportlab.lib.enums import TA_JUSTIFY, TA_LEFT, TA_CENTER, TA_RIGHT
 from reportlab.lib.units import inch, cm, mm
-from autobasedoc import base_fonts, color_dict
+from autobasedoc import base_fonts, color_dict, colors
 from collections import OrderedDict, defaultdict
 from autobasedoc.fonts import getFont
 
@@ -29,12 +29,12 @@ def getTableStyle(tSty=None, tSpaceAfter=0, tSpaceBefore=0):
     use the add method of that object to add style commands e.g.:
     to add a background in the first row::
 
-        tableStyle.add(("BACKGROUND",(0,0),(2,0),ar.colors.green))
-        tableStyle.add(("BACKGROUND",(2,0),(4,0),ar.colors.lavender))
+        tableStyle.add(("BACKGROUND",(0,0),(2,0),ar.color_dict().get("green")))
+        tableStyle.add(("BACKGROUND",(2,0),(4,0),ar.color_dict().get("lavender")))
 
     to change text color on the first two columns::
 
-        tableStyle.add(("TEXTCOLOR",(0,0),(1,-1),ar.colors.red))
+        tableStyle.add(("TEXTCOLOR",(0,0),(1,-1),ar.color_dict().get("red")))
 
     to change alignment of all cells to 'right'::
 
@@ -42,9 +42,13 @@ def getTableStyle(tSty=None, tSpaceAfter=0, tSpaceBefore=0):
 
     to add a grid for the whole table::
 
-        tableStyle.add(("GRID",(0,0),(-1,-1),0.5,ar.colors.black))
+        tableStyle.add(("GRID",(0,0),(-1,-1),0.5,ar.color_dict().get("black")))
+
+    you can use the fixed colors from the reportlab module, but it is better 
+    for further customization to use color_dict().get("color_name") instead.
 
     some further examples of command entries::
+        
 
         ("ALIGN",(0,0),(1,-1),"LEFT"),
         ("ALIGN",(1,0),(2,-1),"RIGHT"),
@@ -120,7 +124,7 @@ class StyledTable(object):
                                    base_fonts()["normal"]))
         if gridded:
             self.addTableStyleCommand(("GRID", (0, 0), (-1, -1), 0.5,
-                                       colors.black))
+                                       color_dict().get("black")))
         if leftTablePadding:
             self.offsetCol = 1
             self.leftTablePadding = leftTablePadding
