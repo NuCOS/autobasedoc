@@ -267,13 +267,14 @@ class AutoDocTemplate(BaseDocTemplate):
                  producer=None,
                  creator=None,
                  keywords=[],
+                 pagesize=A4,
                  debug=False):
 
         if producer is not None:
             PDFInfo.producer = producer
 
         super(AutoDocTemplate, self).__init__(filename,
-            pagesize=A4,
+            pagesize=pagesize,
             leftMargin=leftMargin,
             rightMargin=rightMargin,
             topMargin=topMargin,
