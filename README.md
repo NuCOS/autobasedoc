@@ -142,8 +142,7 @@ autobasedoc/
 │   ├── tableofcontents.py   # TOC generation
 │   └── fonts/               # Bundled fonts
 ├── tests/                   # Test suite and examples
-├── docs/                    # Documentation source
-└── examples/                # Usage examples
+├── sphinx_doc/                    # Documentation source
 ```
 
 ## 🎯 Use Cases
