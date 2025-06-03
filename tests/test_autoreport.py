@@ -171,7 +171,7 @@ class Test_AutoBaseDoc(unittest.TestCase):
 
         # Begin of Documentation to Potable Document
         self.doc = ar.AutoDocTemplate(
-            self.outname,
+            "test_autoreport.pdf",
             onFirstPage=(drawFirstPortrait, 1),
             onLaterPages=(drawLaterPortrait, 0),
             onLaterSPages=(drawLaterLandscape, 2),
