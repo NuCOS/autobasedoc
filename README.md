@@ -213,6 +213,13 @@ table.setTableStyle("grid")  # Predefined styles
 content.append(table)
 ```
 
+### Splitting Large Tables
+```python
+# Automatically break a long table into manageable pieces
+first, second = table.split_table_iterative(frameInfo, available_height)
+story.extend([first.as_flowable, PageBreak(), second.as_flowable])
+```
+
 ## 📚 Documentation
 
 - **Full Documentation**: http://autobasedoc.readthedocs.io/

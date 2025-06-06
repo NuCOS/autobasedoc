@@ -164,6 +164,14 @@ class StyledTable(object):
         self.addTableExtraStyleCommand(cmd_padding_right)
 
     def addTableExtraStyleCommand(self, cmd):
+        """Insert additional style commands.
+
+        Parameters
+        ----------
+        cmd : list or tuple
+            Single command or list of commands understood by
+            :class:`~reportlab.platypus.TableStyle`.
+        """
         if isinstance(cmd, list):
             for cm in cmd:
                 self.tableExtraStyleCommands.append(cm)
@@ -193,6 +201,7 @@ class StyledTable(object):
             self.tableStyleCommands.append(cmd)
 
     def sign(self, x):
+        """Return the sign of ``x`` as ``1`` or ``-1``."""
         if x >= 0:
             return 1
         else:
@@ -540,7 +549,18 @@ class StyledTable(object):
 
 
     def split_table(self, n):
-        """
+        """Split the table after ``n`` rows.
+
+        Parameters
+        ----------
+        n : int
+            Index of the row after which the table is divided.
+
+        Returns
+        -------
+        tuple of StyledTable
+            Two new ``StyledTable`` instances containing the upper and
+            lower part of the table.
         """
         table_copy_up = copy.deepcopy(self)
         table_copy_down = copy.deepcopy(self)
@@ -551,7 +571,19 @@ class StyledTable(object):
 
 
     def split_table_iterative(self, frameInfo, availableHeight):
-        """
+        """Recursively split the table to fit ``availableHeight``.
+
+        Parameters
+        ----------
+        frameInfo : Frame
+            Frame used to calculate available width for wrapping.
+        availableHeight : float
+            Vertical space that should not be exceeded.
+
+        Returns
+        -------
+        tuple of StyledTable
+            Two ``StyledTable`` instances for the upper and lower parts.
         """
         maxHeight = availableHeight - self.spaceBefore * cm - self.spaceAfter * cm
         n = len(self.tableData) - 1
@@ -567,8 +599,7 @@ class StyledTable(object):
         return table_copy_up, table_copy_down
 
     def shift_background_styles(self, n):
-        """
-        """
+        """Shift background style commands after splitting."""
         out_styles = []
         tableStyleCommands = []
         for command in self.tableStyleCommands:
@@ -583,8 +614,7 @@ class StyledTable(object):
         self.tableStyleCommands = tableStyleCommands
 
     def snip_background_styles(self, n):
-        """
-        """
+        """Trim background style commands at split position."""
         out_styles = []
         tableStyleCommands = []
         for command in self.tableStyleCommands:
