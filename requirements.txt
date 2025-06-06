@@ -2,5 +2,5 @@ reportlab>=3.4.0
 pdfrw>=0.4
 svglib>=0.8.1
 cycler>=0.10.0
-matplotlib>=2.0.2<3.0.0
+matplotlib>=2.0.2,<3.0.0
 img2pdf
