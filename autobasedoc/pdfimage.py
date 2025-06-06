@@ -35,29 +35,33 @@ from svglib.svglib import svg2rlg
 
 import img2pdf
 
-def convert_px_to_pdf_image_obj(img_path):
-    """
-    convert png image to pdf byte object
-    output can be passed to PdfImage
+def convert_px_to_pdf_image_obj(img_path: str) -> BytesIO:
+    """Convert a PNG image to a PDF byte stream.
+
+    Parameters
+    ----------
+    img_path : str
+        Path to the PNG file.
+
+    Returns
+    -------
+    io.BytesIO
+        Buffer containing the PDF representation.  The buffer can be passed to
+        :class:`PdfImage`.
     """
     return BytesIO(img2pdf.convert(img_path))
 
-def form_xo_reader(imgdata):
+def form_xo_reader(imgdata: BytesIO):
+    """Create a ``pdfrw`` XObject from a PDF byte buffer."""
     page, = PdfReader(imgdata).pages
     return pagexobj(page)
 
-def getSvg(path):
-    """
-    return `reportlab.graphics.shapes.Drawing()` object
-    with the contents of the SVG specified by path
-    """
+def getSvg(path: str):
+    """Load an SVG file into a ReportLab :class:`~reportlab.graphics.shapes.Drawing`."""
     return svg2rlg(path)
 
-def scaleDrawing(drawing,factor,showBoundary=False):
-    """
-    scale a reportlab.graphics.shapes.Drawing() object,
-    leaving its aspect ratio unchanged
-    """
+def scaleDrawing(drawing, factor: float, showBoundary: bool = False):
+    """Scale a drawing while preserving aspect ratio."""
     sx=sy=factor
     drawing.width,drawing.height = drawing.minWidth()*sx, drawing.height*sy
     drawing.scale(sx,sy)
@@ -66,10 +70,8 @@ def scaleDrawing(drawing,factor,showBoundary=False):
 
     return drawing
 
-def getScaledSvg(path,factor):
-    """
-    get a scaled svg image from file
-    """
+def getScaledSvg(path: str, factor: float):
+    """Load and scale an SVG file."""
     drawing = getSvg(path)
 
     return scaleDrawing(drawing,factor)
