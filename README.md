@@ -49,6 +49,14 @@ cd autobasedoc
 pip install -e .
 ```
 
+### Environment Setup Script
+If you want to create a local virtual environment with all dependencies, you can
+run the helper script:
+
+```bash
+./setup_env.sh
+```
+
 ### Requirements
 - Python 3.6+
 - ReportLab 3.5+
