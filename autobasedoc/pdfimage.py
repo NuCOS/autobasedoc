@@ -164,7 +164,7 @@ class PdfAsset(Flowable):
 
     it can e used like a `reportlab.platypus.Flowable()`
     """
-    def __init__(self,fname,width=None,height=None,kind='direct'):
+    def __init__(self, fname, width=None, height=None, kind='direct'):
 
         self.page = PdfReader(fname=fname, decompress=False).pages[0]
         self.xobj = pagexobj(self.page)
@@ -179,13 +179,15 @@ class PdfAsset(Flowable):
         if not self.imageHeight:
             self.imageHeight = self._h
         self.__ratio = float(self.imageWidth)/self.imageHeight
-        if kind in ['direct','absolute'] or width==None or height==None:
+        if kind in ['direct', 'absolute'] or width is None or height is None:
             self.drawWidth = width or self.imageWidth
             self.drawHeight = height or self.imageHeight
-        elif kind in ['bound','proportional']:
-            factor = min(float(width)/self._w,float(height)/self._h)
-            self.drawWidth = self._w*factor
-            self.drawHeight = self._h*factor
+        elif kind in ['bound', 'proportional']:
+            factor = min(float(width) / self._w, float(height) / self._h)
+            self.drawWidth = self._w * factor
+            self.drawHeight = self._h * factor
+        self.width = self.drawWidth
+        self.height = self.drawHeight
 
     def wrap(self, width, height):
         return self.imageWidth, self.imageHeight
