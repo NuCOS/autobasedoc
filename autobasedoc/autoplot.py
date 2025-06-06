@@ -53,11 +53,11 @@ fontprop = None
 
 
 def autoPdfImage(func):
-    """
-    decorator for the autoplot module
+    """Decorator returning :class:`PdfImage` instances for plots.
 
-    returns two PdfImage objects if wrapped plt-function obeys the principle
-    demonstated in following minimal example::
+    The wrapped matplotlib function must return a tuple ``(fig, legend_fig,
+    legend)``.  Two :class:`PdfImage` objects – the plot and its legend – are
+    produced.  Example::
 
         @autoPdfImage
         def my_plot(canvaswidth=5): #[inch]
@@ -127,11 +127,10 @@ def autoPdfImage(func):
 
 
 def autoPdfImg(func):
-    """
-    decorator for the autoplot module
+    """Decorator returning a single :class:`PdfImage` for a plot.
 
-    returns one PdfImage objects if wrapped plt-function obeys the principle
-    demonstated in following minimal example::
+    The wrapped function should return a matplotlib ``Figure``.  The figure is
+    saved to a PDF byte buffer and returned as a :class:`PdfImage`.  Example::
 
         @autoPdfImg
         def my_plot(canvaswidth=5): #[inch]
@@ -193,9 +192,14 @@ def autoPdfImg(func):
 
 
 def full_extent(ax, pad=0.0):
-    """
-    Get the full extent of an axes, including axes labels, tick labels, and
-    titles.
+    """Return the bounding box of an ``Axes`` including tick and axis labels.
+
+    Parameters
+    ----------
+    ax : :class:`matplotlib.axes.Axes`
+        Target axes instance.
+    pad : float, optional
+        Padding factor applied to the final bounding box.
     """
     # For text objects, we need to draw the figure first, otherwise the extents
     # are undefined.

@@ -1,13 +1,8 @@
-"""
-fonts
-=====
+"""Font utilities used throughout :mod:`autobasedoc`.
 
-.. module:: fonts
-   :platform: Unix, Windows
-   :synopsis: font utils
-
-.. moduleauthor:: Johannes Eckstein
-
+This module centralises handling of font registration and font directories.  The
+functions are thin wrappers around the ReportLab API and are used by
+``autorpt`` and the example scripts.
 """
 
 import os
@@ -18,25 +13,31 @@ from reportlab.pdfbase.pdfmetrics import getFont
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.fonts import addMapping
 
+# directory containing the bundled font files
+__font_dir__ = os.path.realpath(os.path.join(os.path.dirname(__file__), "fonts"))
+
 
 def registerFont(faceName, afm, pfb):
+    """Register a Type1 font pair.
+
+    Parameters
+    ----------
+    faceName : str
+        Name used by ReportLab for the font.
+    afm : str
+        Base filename of the AFM metrics file located in ``__font_dir__``.
+    pfb : str
+        Base filename of the PFB font file located in ``__font_dir__``.
+
+    Notes
+    -----
+    The AFM metrics distributed with Matplotlib are paired with PFB files from
+    ReportLab to create embedded Type1 fonts.  Previously this function used
+    ``str.join`` which raised a ``TypeError``.  The path handling has been
+    corrected.
     """
-    Helvetica BUT AS AFM
-
-    The below section is NOT equal to::
-
-        _baseFontName  ='Helvetica'
-        _baseFontNameB ='Helvetica-Bold'
-        _baseFontNameI ='Helvetica-Oblique'
-        _baseFontNameBI='Helvetica-BoldOblique'
-
-    we will mapp afm files from matplotlib with pfb files from reportlab
-
-    this will give embedded Type1 Face Fonts
-
-    """
-    afm = os.path.join(__font_dir__, "".join(afm, ".afm"))
-    pfb = os.path.join(__font_dir__, "".join(pfb, ".pfb"))
+    afm = os.path.join(__font_dir__, f"{afm}.afm")
+    pfb = os.path.join(__font_dir__, f"{pfb}.pfb")
 
     face = pdfmetrics.EmbeddedType1Face(afm, pfb)
     pdfmetrics.registerTypeFace(face)
@@ -50,9 +51,7 @@ def setTtfFonts(familyName,
                 bold=(None, None),
                 italic=(None, None),
                 bold_italic=(None, None)):
-    """
-    Sets fonts for True Type Fonts
-    """
+    """Register a TrueType font family with ReportLab."""
     normalName, normalFile = normal
     boldName, boldFile = bold
     italicName, italicFile = italic
