@@ -66,10 +66,7 @@ def create_bookmark(text, level):
     return ar.Bookmark(text, level)
 
 def create_image(url, width, height):
-    flow = PdfAsset(url, width=width * ar.cm, height=height * ar.cm)
-    # NOTE next line should be repaired in pdfimage !!!
-    flow.width = width * ar.cm
-    return flow
+    return PdfAsset(url, width=width * ar.cm, height=height * ar.cm)
 
 def create_header(headerText, rightHeaderLines, logoUrl):
     header = Header(headerMarginTop=0.9, debug=False)

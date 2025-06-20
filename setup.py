@@ -114,6 +114,6 @@ setup(name=name,
       scripts=scripts,
       data_files=data_files,
       #test_suite='setup.my_test_suite', 
-      install_requires=['reportlab','pdfrw','svglib', 'cycler', 'matplotlib','img2pdf'],
+      install_requires=['reportlab','pdfrw','svglib', 'cycler', 'matplotlib>=3.5','img2pdf'],
       include_package_data=True,
       )

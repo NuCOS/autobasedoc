@@ -119,51 +119,59 @@ def drawLaterLandscape(canv, doc):
 
 class Test_AutoBaseDoc(unittest.TestCase):
     """
-    test class for writing pdf file with AutoDocTemplate and Styles
-
-    If you want to append special behaviour of some Paragraph styles::
-
-        self.styles.normal_left = ar.ParagraphStyle(
-            name='normal', fontSize=6, leading=7, alignment=ar.TA_LEFT)
-
-    performance test on add and multi build
-    This shows we dont have linear cost increase:
-
-    # 10 in 0.67 seconds; per ch_pair:= 0,067
-    # 100 in 2.964 seconds; per ch_pair:= 0,029
-    # 200 in 7.801 seconds; per ch_pair:= 0,039
-    # 400 in 27.064 seconds; per ch_pair:= 0,06016
-    # 500 in 44.385 seconds; per ch_pair:= 0,0887
-    # 600 in 63.645 seconds; per ch_pair:= 0,1
-    # 800 in 120.183 seconds; per ch_pair:= 0,15
-    # 1000 in 200.063 seconds; per ch_pair:= 0,2
+    Haupttestklasse für AutoBaseDoc-Funktionalität.
+    
+    Diese Klasse testet den kompletten Workflow der PDF-Erstellung
+    von der Dokumentinitialisierung bis zur finalen Ausgabe.
     """
-
-    @classmethod
-    def setUpClass(cls):
-        """
-        do all necessary calculations that are the basis for the actual test
-        """
-
-        cls.textsize = 12
-
-        cls.outname = os.path.realpath(
-            os.path.join(__examples__, "MinimalExample.pdf"))
-        cls.doc = None
-        cls.contents = []
-        cls.styles = None
-
+    
     def setUp(self):
         """
-        Hook method for setting up the test fixture before exercising it.
-
-        Has to be run to set up the test
+        Test-Setup: Erstellt Basis-Dokumentkonfiguration.
+        
+        Initialisiert:
+        - AutoDocTemplate mit Standard-Einstellungen
+        - Styles für konsistente Formatierung
+        - Leere Content-Liste für Flowables
         """
+        """
+        Umfassende Tests für das autorpt-Modul.
+
+        Diese Testsuite validiert alle Hauptfunktionen der AutoBaseDoc-Bibliothek,
+        einschließlich:
+
+        - Dokumenterstellung in verschiedenen Formaten
+        - Layout-Management und Frame-Handling  
+        - Header/Footer-Funktionalität
+        - Bookmark- und TOC-Generierung
+        - Matplotlib-Integration
+        - Fehlerbehandlung
+
+        Testklassen
+        -----------
+        Test_AutoBaseDoc : unittest.TestCase
+            Haupttestklasse mit vollständigen Dokumenterstellungsszenarien
+            
+        Testmethoden
+        -----------
+        - test_create_document(): Basis-Dokumenterstellung
+        - test_add_content(): Hinzufügen verschiedener Inhaltstypen
+        - test_layouts(): Portrait/Landscape-Layouts  
+        - test_headers_footers(): Kopf-/Fußzeilenfunktionen
+        - test_bookmarks(): PDF-Navigation
+        - test_matplotlib(): Plot-Integration
+
+        Ausführung
+        ----------
+            python -m unittest tests.test_autoreport
+            python tests/test_autoreport.py
+        """
+
         self.fake = Faker()
 
         # Begin of Documentation to Potable Document
         self.doc = ar.AutoDocTemplate(
-            self.outname,
+            "test_autoreport.pdf",
             onFirstPage=(drawFirstPortrait, 1),
             onLaterPages=(drawLaterPortrait, 0),
             onLaterSPages=(drawLaterLandscape, 2),

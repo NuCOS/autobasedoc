@@ -1,17 +1,63 @@
 """
-autorpt
-=======
+AutoBaseDoc - Professional PDF Automation
+==========================================
 
-.. module:: autorpt
-   :platform: Unix, Windows
-   :synopsis: document templates for automatic document generation
+AutoBaseDoc is a Python library for automated creation of professional 
+PDF documents with advanced layout features.
 
-.. moduleauthor:: Johannes Eckstein
+Key Features
+-----------
 
-Class AutoDocTemplate customized for automatic document creation
-this inherits and partly redefines reportlab code
+🎨 **Flexible Layouts**
+   - Portrait and landscape formats
+   - Multi-column designs  
+   - Automatic frame management
 
+📊 **Matplotlib Integration**
+   - Seamless plot embedding
+   - Automatic image scaling
+   - Consistent fonts
+
+📑 **Automatic Navigation**
+   - Table of contents with links
+   - PDF bookmarks
+   - Page references
+
+✨ **Styling System**
+   - Predefined styles
+   - TTF font support
+   - Color management
+
+Quick Start
+-----------
+
+.. code-block:: python
+
+    import autobasedoc.autorpt as ar
+    
+    # Create document
+    doc = ar.AutoDocTemplate("report.pdf")
+    styles = ar.Styles()
+    
+    # Add content
+    content = []
+    content.append(ar.Paragraph("My Title", styles.title))
+    
+    # Generate PDF
+    doc.multiBuild(content)
+
+Architecture
+-----------
+
+The package consists of several modules:
+
+- ``autorpt``: Core document functionality
+- ``autoplot``: Matplotlib integration  
+- ``styles``: Styling system
+- ``pageinfo``: Page information
+- ``fonts``: Font management
 """
+
 from __future__ import print_function
 
 import os
@@ -74,10 +120,35 @@ def reprFrame(frame):
 
 def drawFirstPortrait(canv, doc):
     """
-    This is the Title Page Template (Portrait Oriented)
+    Page template for the first page in portrait format.
+    
+    This function is automatically called for the first page and 
+    configures the canvas for portrait orientation with standard plugins.
+    
+    Parameters
+    ----------
+    canv : reportlab.pdfgen.canvas.Canvas
+        The canvas object for drawing
+    doc : AutoDocTemplate
+        The document instance with layout information
+        
+    Notes
+    -----
+    - Automatically sets page size and font
+    - Activates addPlugin for "First" frame
+    - Canvas state is saved and restored
+    
+    Examples
+    --------
+    ::
+    
+        doc = AutoDocTemplate(
+            "example.pdf",
+            onFirstPage=(drawFirstPortrait, 0)
+        )
     """
     canv.saveState()
-    #set Page Size
+    # Set page size
     frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
@@ -89,14 +160,14 @@ def drawFirstPortrait(canv, doc):
 
 def drawFirstLandscape(canv, doc):
     """
-    This is the Template of any later drawn Landscape Oriented Page
+    Page template for the first page in landscape format.
 
-    the frame object is only used as a reference to be able to draw to the canvas
+    The frame object is only used as a reference to be able to draw to the canvas.
 
     After creation a Frame is not usually manipulated directly by the
-    applications program -- it is used internally by the platypus modules.
+    application program -- it is used internally by the platypus modules.
 
-    Here is a diagramatic abstraction for the definitional part of a Frame::
+    Here is a diagrammatic abstraction for the definitional part of a Frame::
 
                 width                    x2,y2
         +---------------------------------+
@@ -114,11 +185,11 @@ def drawFirstLandscape(canv, doc):
         +---------------------------------+
         (x1,y1) <-- lower left corner
 
-    NOTE!! Frames are stateful objects.  No single frame should be used in
-    two documents at the same time (especially in the presence of multithreading.
+    NOTE!! Frames are stateful objects. No single frame should be used in
+    two documents at the same time (especially in the presence of multithreading).
     """
     canv.saveState()
-    #set Page Size
+    # Set page size
     frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
@@ -132,10 +203,10 @@ onFirstPage = drawFirstPortrait, 0
 
 def drawLaterPortrait(canv, doc):
     """
-    This is the Template of any following Portrait Oriented Page
+    Page template for subsequent portrait-oriented pages.
     """
     canv.saveState()
-    #set Page Size
+    # Set page size
 
     frame, pagesize = doc.getFrame(doc.template_id)
 
@@ -148,13 +219,11 @@ def drawLaterPortrait(canv, doc):
 
 def drawLaterLandscape(canv, doc):
     """
-    This is the Template of any later drawn Landscape Oriented Page
+    Page template for subsequent landscape-oriented pages.
     """
     canv.saveState()
 
-    #set Page Size and
-    #some variables
-
+    # Set page size and variables
     frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
@@ -164,14 +233,12 @@ def drawLaterLandscape(canv, doc):
 
     canv.restoreState()
 
-onLaterPages = drawLaterPortrait, 0
-
 def drawLaterSpecialPortrait(canv, doc):
     """
-    This is the Template of any following Portrait Oriented Page
+    Page template for special portrait-oriented pages.
     """
     canv.saveState()
-    #set Page Size
+    # Set page size
 
     frame, pagesize = doc.getFrame(doc.template_id)
 
@@ -184,13 +251,11 @@ def drawLaterSpecialPortrait(canv, doc):
 
 def drawLaterSpecialLandscape(canv, doc):
     """
-    This is the Template of any later drawn Landscape Oriented Page
+    Page template for special landscape-oriented pages.
     """
     canv.saveState()
 
-    #set Page Size and
-    #some variables
-
+    # Set page size and variables
     frame, pagesize = doc.getFrame(doc.template_id)
 
     canv.setPageSize(pagesize)
@@ -204,51 +269,75 @@ onLaterSPages = drawLaterSpecialLandscape, 0
 
 class AutoDocTemplate(BaseDocTemplate):
     """
-    This is our Document Template, here we want to add our special formatting, that we need for our Document Creation
-
-    We derive from BaseDocTemplate, we don't want to and cannot superclass here...
-
-    We have one unique way inside afterFlowable to create one outline entry for each flowable by:
-
-    - adding the <a name=outlineName> to text within the paragraph flowable.
-    - using self.notify(), self.canv.bookmarkPage() and self.canv.addOutlineEntry() inside a function afterFlowable() which is overloaded in an own Template class that inherits from BaseDocTemplate
-
-    For a basic example, please see in TOC with clickable links by rptlab.
-    we implemented a special action flowable class called Bookmark, that has no actions! please see modifications in afterFlowable().
-    Unlike with paragraphs we are also abled to store many outline entries from one Table.
-    This is the best way to do this for multible bookmarks in one table flowable without having to write too much overhead code.
-
-    We discovered this workaround that was postet in ReportLab-users Group back in 2004 by Marc Stober. This workaround suggests using a class Bookmark.
-    We have ported this to use an ActionFlowable, to do the bookmarking, because this flowable is not doing anything at all, but storing some values, so that afterFlowable() can see them.
-
-    To define Template settings for your pages you can use three stages, override the default values::
-
-        onFirstPage=(_doNothing, 0)
-        onLaterPages=(_doNothing, 0)
-        onLaterSPages=(_doNothing, 0)
-
-    The stages are:
-
-    - `onFirstPage` template for the first page
-    - `onLaterPages` template of any following page
-    - `onLaterSPages` template on any later switchable special page
-
-    Instead of `_doNothing`, a function that just carries a pass, you can define your own function that can draw something on the canvas before anything else gets drawn.
-    For the most common cases there are the following 'template' functions:
-
-    - :func:`drawFirstPortrait`
-    - :func:`drawFirstLandscape`
-    - :func:`drawLaterPortrait`
-    - :func:`drawLaterLandscape`
-    - :func:`drawLaterSpecialPortrait`
-    - :func:`drawLaterSpecialLandscape`
-
-    To define a scheme, where all pages are Portrait but special pages are landscape pages::
-
-        onFirstPage=onFirstPage
-        onLaterPages=onLaterPages
-        onLaterSPages=onLaterSPages
-
+    Extended document template for automatic PDF generation.
+    
+    This class extends ReportLab's BaseDocTemplate with specialized 
+    functionality for automatic document creation, including:
+    
+    - Multi-stage page templates (First/Later/Special)
+    - Automatic frame management 
+    - Integrated bookmark support
+    - Flexible layout configuration
+    - Image size adjustment
+    
+    Parameters
+    ----------
+    filename : str
+        Path to output PDF file
+    onFirstPage : tuple, optional
+        (Function, frame count) for first page, default: (_doNothing, 0)
+    onLaterPages : tuple, optional  
+        (Function, frame count) for subsequent pages, default: (_doNothing, 0)
+    onLaterSPages : tuple, optional
+        (Function, frame count) for special pages, default: (_doNothing, 0)
+    leftMargin, rightMargin, topMargin, bottomMargin : float, optional
+        Page margins in points, default: 0.5*cm
+    pagesize : tuple, optional
+        Page size, default: A4
+    debug : bool, optional
+        Enable debug mode, default: False
+    title, author, subject, producer, creator : str, optional
+        PDF metadata
+    keywords : list, optional
+        PDF keywords
+        
+    Attributes
+    ----------
+    pageInfos : OrderedDict
+        Collection of page information (headers/footers)
+    figCount : int
+        Figure counter
+    templates : dict
+        Available page templates
+    fontSize : int
+        Default font size
+    lineWidth : float
+        Default line width
+        
+    Examples
+    --------
+    Simple portrait document::
+    
+        doc = AutoDocTemplate(
+            "report.pdf",
+            onFirstPage=(drawFirstPortrait, 0),
+            onLaterPages=(drawLaterPortrait, 0),
+            title="My Report"
+        )
+        
+    Two-column landscape layout::
+    
+        doc = AutoDocTemplate(
+            "wide_report.pdf", 
+            onFirstPage=(drawFirstLandscape, 1),
+            onLaterPages=(drawLaterLandscape, 2),
+            pagesize=landscape(A4)
+        )
+        
+    See Also
+    --------
+    drawFirstPortrait, drawLaterPortrait : Predefined page templates
+    addPageInfo : Adding header/footer elements
     """
 
     def __init__(self,
