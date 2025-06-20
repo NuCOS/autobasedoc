@@ -45,7 +45,13 @@ for dirname, dirnames, filenames in os.walk(name):
 package_dir = {name: name}
 
 # Data files used e.g. in tests
-package_data = {} #{name: [os.path.join(name, 'tests', 'prt.txt')]}
+package_data = {
+    'autobasedoc': [
+        'fonts/*.ttf',
+        'fonts/*.afm',
+        'fonts/*.pfb'
+    ]
+}  # {name: [os.path.join(name, 'tests', 'prt.txt')]}
 
 # The current version number - MSI accepts only version X.X.X
 exec(open(os.path.join(name, 'version.py')).read())
